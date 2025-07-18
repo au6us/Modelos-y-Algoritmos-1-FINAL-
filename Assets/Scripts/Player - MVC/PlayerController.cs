@@ -4,9 +4,15 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerModel), typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
+    [Header("Ground Check")]
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private float groundRadius = 0.1f;
+    [SerializeField] private LayerMask groundLayer;
+
     private PlayerModel model;
     private PlayerView view;
     private Rigidbody2D rb;
+    private Vector2 moveInput;
     private bool isDashing;
 
     private void Awake()
@@ -23,54 +29,54 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!isDashing) ApplyMovement();
+        // Ground Check cada frame de física
+        bool grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);
+        if (grounded) model.Land();
+
+        if (!isDashing)
+        {
+            ApplyMovement();
+            view.HandleMove(rb.velocity);
+        }
     }
 
-    private Vector2 moveInput;
     private void ProcessInput()
     {
-        // Movimiento horizontal
-        float h = 0f;
-        if (Input.GetKey(KeyCode.A)) h = -1f;
-        if (Input.GetKey(KeyCode.D)) h = +1f;
-        moveInput = new Vector2(h, 0);
-        if (h != 0) view.HandleMove(rb.velocity);
+        float h = (Input.GetKey(KeyCode.D) ? 1f : 0f) + (Input.GetKey(KeyCode.A) ? -1f : 0f);
+        moveInput = new Vector2(h, 0f);
 
-        // Salto con W
         if (Input.GetKeyDown(KeyCode.W) && model.UseJump())
         {
             rb.velocity = new Vector2(rb.velocity.x, model.JumpForce);
         }
 
-        // Dash con S
         if (Input.GetKeyDown(KeyCode.S) && model.UseDash())
         {
-            StartCoroutine(DashRoutine(h == 0 ? transform.localScale.x : h));
+            StartCoroutine(DashRoutine(h == 0f ? Mathf.Sign(transform.localScale.x) : h));
         }
     }
 
     private void ApplyMovement()
     {
         rb.velocity = new Vector2(moveInput.x * model.MoveSpeed, rb.velocity.y);
-        view.HandleMove(rb.velocity);
     }
 
     private IEnumerator DashRoutine(float direction)
     {
         isDashing = true;
         float originalGravity = rb.gravityScale;
-        rb.gravityScale = 0;
-        rb.velocity = new Vector2(direction * model.DashSpeed, 0);
+        rb.gravityScale = 0f;
+        rb.velocity = new Vector2(direction * model.DashSpeed, 0f);
         yield return new WaitForSeconds(model.DashDuration);
         rb.gravityScale = originalGravity;
         isDashing = false;
     }
 
-    private void OnCollisionEnter2D(Collision2D col)
+    // Opcional: visualizar GroundCheck en el editor
+    private void OnDrawGizmosSelected()
     {
-        if (col.contacts[0].normal.y > 0.5f)
-        {
-            model.Land();
-        }
+        if (groundCheck == null) return;
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(groundCheck.position, groundRadius);
     }
 }

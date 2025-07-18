@@ -1,21 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+//using System.Collections;
+//using System.Collections.Generic;
+//using UnityEngine;
 
-public class Pinchos : MonoBehaviour
-{
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer == 6)
-        {
-            Player jugador = collision.GetComponent<Player>();
+//public class Pinchos : MonoBehaviour
+//{
+//    private void OnTriggerEnter2D(Collider2D collision)
+//    {
+//        if (collision.gameObject.layer == 6)
+//        {
+//            PlayerModel jugador = collision.GetComponent<PlayerModel>();
 
-            if (jugador != null)
-            {
+//            if (jugador != null)
+//            {
 
-                jugador.TakeDamage(jugador.life, transform.position);
-            }
-        }
+//                jugador.TakeDamage(jugador.life, transform.position);
+//            }
+//        }
              
-    }
-}
+//    }
+//}

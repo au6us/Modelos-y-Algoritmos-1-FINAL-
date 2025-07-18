@@ -9,7 +9,7 @@ public class Menu : MonoBehaviour
     public GameObject menuPanel, credits;
     [SerializeField] EventTrigger prototypeButton;
     [SerializeField] EventTrigger creditsButton;
-    private Player player;
+    private PlayerModel playerModel;
     void Start()
     {
         ShowMain();

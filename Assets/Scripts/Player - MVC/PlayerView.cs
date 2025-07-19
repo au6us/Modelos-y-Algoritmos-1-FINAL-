@@ -17,28 +17,28 @@ public class PlayerView : MonoBehaviour
 
     private void OnEnable()
     {
+        model.OnJump += () => anim.SetBool("Jump", true);
         model.OnDoubleJump += () => anim.SetBool("isDouble", true);
-        model.OnLand += () => anim.SetBool("isGround", true);
-        model.OnDash += () => anim.SetBool("Dash", true);
-        model.OnDamage += () => anim.SetBool("Hurt", true);
+        model.OnLand += ResetStatesOnLand;
+        model.OnDamage += () => SetHurt(true);
     }
 
     private void OnDisable()
     {
+        model.OnJump -= () => anim.SetBool("Jump", true);
         model.OnDoubleJump -= () => anim.SetBool("isDouble", true);
-        model.OnLand -= () => anim.SetBool("isGround", true);
-        model.OnDash -= () => anim.SetBool("Dash", true);
-        model.OnDamage -= () => anim.SetBool("Hurt", true);
+        model.OnLand -= ResetStatesOnLand;
+        model.OnDamage -= () => SetHurt(true);
     }
 
-    /// <summary>Actualiza movimiento (Speed) y dirección (flipX).</summary>
+    /// <summary>Actualiza Speed y voltea el sprite.</summary>
     public void HandleMove(Vector2 velocity)
     {
         anim.SetFloat("Speed", Mathf.Abs(velocity.x));
         sr.flipX = velocity.x < 0f;
     }
 
-    /// <summary>Marca salto simple.</summary>
+    /// <summary>Marca salto (subida).</summary>
     public void SetJump(bool jumping)
     {
         anim.SetBool("Jump", jumping);
@@ -50,25 +50,44 @@ public class PlayerView : MonoBehaviour
         anim.SetBool("Fall", falling);
     }
 
-    /// <summary>Resetea estados al aterrizar.</summary>
+    /// <summary>Marca estado de suelo (enSuelo).</summary>
+    public void SetGrounded(bool grounded)
+    {
+        anim.SetBool("isGround", grounded);
+    }
+
+    /// <summary>Marca segundo salto.</summary>
+    public void SetDouble(bool isDouble)
+    {
+        anim.SetBool("isDouble", isDouble);
+    }
+
+    /// <summary>Marca daño (Hurt).</summary>
+    public void SetHurt(bool hurt)
+    {
+        anim.SetBool("Hurt", hurt);
+    }
+
+    /// <summary>Resetea estados al aterrizar (Jump, Double, Fall).</summary>
     public void ResetStatesOnLand()
     {
         anim.SetBool("Jump", false);
         anim.SetBool("isDouble", false);
         anim.SetBool("Fall", false);
         anim.SetBool("isGround", true);
+        anim.SetBool("Dash", false);
+        anim.SetBool("Hurt", false);
     }
 
-    /// <summary>Resetea dash después de terminar.</summary>
+    /// <summary>Resetea dash tras la rutina.</summary>
     public void ResetDash()
     {
         anim.SetBool("Dash", false);
     }
 
-    /// <summary>Resetea Hurt después de animación.</summary>
+    /// <summary>Resetea Hurt tras la animación.</summary>
     public void ResetHurt()
     {
         anim.SetBool("Hurt", false);
     }
-
 }

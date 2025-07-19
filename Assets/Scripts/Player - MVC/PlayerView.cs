@@ -1,9 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-[RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(Animator), typeof(SpriteRenderer))]
 public class PlayerView : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private PlayerModel model;
+
     private SpriteRenderer sr;
     private Animator anim;
 
@@ -15,38 +17,58 @@ public class PlayerView : MonoBehaviour
 
     private void OnEnable()
     {
-        model.OnJump += HandleJump;
-        model.OnDash += HandleDash;
-        model.OnDamage += HandleDamage;
-    }
-    private void OnDisable()
-    {
-        model.OnJump -= HandleJump;
-        model.OnDash -= HandleDash;
-        model.OnDamage -= HandleDamage;
+        model.OnDoubleJump += () => anim.SetBool("isDouble", true);
+        model.OnLand += () => anim.SetBool("isGround", true);
+        model.OnDash += () => anim.SetBool("Dash", true);
+        model.OnDamage += () => anim.SetBool("Hurt", true);
     }
 
-    /// Llamar desde el Controller pas�ndole la direcci�n X
+    private void OnDisable()
+    {
+        model.OnDoubleJump -= () => anim.SetBool("isDouble", true);
+        model.OnLand -= () => anim.SetBool("isGround", true);
+        model.OnDash -= () => anim.SetBool("Dash", true);
+        model.OnDamage -= () => anim.SetBool("Hurt", true);
+    }
+
+    /// <summary>Actualiza movimiento (Speed) y dirección (flipX).</summary>
     public void HandleMove(Vector2 velocity)
     {
         anim.SetFloat("Speed", Mathf.Abs(velocity.x));
-
-        if (velocity.x > 0.01f) sr.flipX = false;
-        else if (velocity.x < -0.01f) sr.flipX = true;
+        sr.flipX = velocity.x < 0f;
     }
 
-    private void HandleJump()
+    /// <summary>Marca salto simple.</summary>
+    public void SetJump(bool jumping)
     {
-        anim.SetTrigger("Jump");
+        anim.SetBool("Jump", jumping);
     }
 
-    private void HandleDash()
+    /// <summary>Marca caída.</summary>
+    public void SetFall(bool falling)
     {
-        anim.SetTrigger("Dash");
+        anim.SetBool("Fall", falling);
     }
 
-    private void HandleDamage()
+    /// <summary>Resetea estados al aterrizar.</summary>
+    public void ResetStatesOnLand()
     {
-        anim.SetTrigger("Hurt");
+        anim.SetBool("Jump", false);
+        anim.SetBool("isDouble", false);
+        anim.SetBool("Fall", false);
+        anim.SetBool("isGround", true);
     }
+
+    /// <summary>Resetea dash después de terminar.</summary>
+    public void ResetDash()
+    {
+        anim.SetBool("Dash", false);
+    }
+
+    /// <summary>Resetea Hurt después de animación.</summary>
+    public void ResetHurt()
+    {
+        anim.SetBool("Hurt", false);
+    }
+
 }

@@ -19,9 +19,12 @@ public class PlayerModel : MonoBehaviour
     public int Life { get; private set; }
 
     // Eventos
-    public event Action OnJump;
-    public event Action OnDash;
-    public event Action OnDamage;
+    public event Action OnJump;           // Salto normal
+    public event Action OnDoubleJump;     // Doble salto
+    public event Action OnFall;           // Inicio de caída
+    public event Action OnLand;           // Aterrizaje
+    public event Action OnDash;           // Dash
+    public event Action OnDamage;         // Daño recibido
 
     private void Awake()
     {
@@ -29,19 +32,40 @@ public class PlayerModel : MonoBehaviour
         Life = MaxLife;
     }
 
+    /// <summary>
+    /// Intenta un salto. Dispara OnJump o OnDoubleJump según corresponda.
+    /// </summary>
     public bool UseJump()
     {
         if (JumpsLeft <= 0) return false;
         JumpsLeft--;
-        OnJump?.Invoke();
+        if (JumpsLeft == MaxJumps - 1)
+            OnJump?.Invoke();        // Primer salto
+        else
+            OnDoubleJump?.Invoke();  // Segundo salto
         return true;
     }
 
+    /// <summary>
+    /// Invocado al caer (por parte del Controller cuando la velocidad vertical es negativa).
+    /// </summary>
+    public void Fall()
+    {
+        OnFall?.Invoke();
+    }
+
+    /// <summary>
+    /// Recarga saltos y dispara OnLand.
+    /// </summary>
     public void Land()
     {
         JumpsLeft = MaxJumps;
+        OnLand?.Invoke();
     }
 
+    /// <summary>
+    /// Intenta hacer dash y dispara OnDash.
+    /// </summary>
     public bool UseDash()
     {
         if (!CanDash) return false;
@@ -57,6 +81,9 @@ public class PlayerModel : MonoBehaviour
         CanDash = true;
     }
 
+    /// <summary>
+    /// El jugador recibe daño.
+    /// </summary>
     public void TakeDamage()
     {
         Life--;

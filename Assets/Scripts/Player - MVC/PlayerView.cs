@@ -21,11 +21,13 @@ public class PlayerView : MonoBehaviour
 
     private SpriteRenderer sr;
     private Animator anim;
+    private Rigidbody2D rb;
 
     private System.Action onJumpHandler;
     private System.Action onDoubleJumpHandler;
     private System.Action onLandHandler;
     private System.Action onDamageHandler;
+    private System.Action onDashHandler;
 
     private void Awake()
     {
@@ -54,10 +56,17 @@ public class PlayerView : MonoBehaviour
 
         };
 
+        model.OnDash += () => {
+            dashSFX.Play();
+            dashParticles.Play();
+        };
+
+
         model.OnJump += onJumpHandler;
         model.OnDoubleJump += onDoubleJumpHandler;
         model.OnLand += onLandHandler;
         model.OnDamage += onDamageHandler;
+        model.OnDash += onDashHandler;
     }
 
     private void OnDisable()
@@ -66,12 +75,13 @@ public class PlayerView : MonoBehaviour
         model.OnDoubleJump -= onDoubleJumpHandler;
         model.OnLand -= onLandHandler;
         model.OnDamage -= onDamageHandler;
+        model.OnDash -= onDashHandler;
     }
 
     public void HandleMove(Vector2 velocity)
     {
         anim.SetFloat("Speed", Mathf.Abs(velocity.x));
-        sr.flipX = velocity.x < 0f;
+        sr.flipX = velocity.x < 0f; 
     }
 
     public void SetJump(bool jumping)

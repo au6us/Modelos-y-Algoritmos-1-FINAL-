@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PlayerModel : MonoBehaviour
 {
-    // Parámetros ajustables
     public float MoveSpeed = 5f;
     public float JumpForce = 7f;
     public int MaxJumps = 2;
@@ -13,7 +12,6 @@ public class PlayerModel : MonoBehaviour
     public float DashCooldown = 1f;
     public int MaxLife = 3;
 
-    // Estado interno
     public int JumpsLeft { get; private set; }
     public bool CanDash { get; private set; } = true;
     public int Life { get; private set; }
@@ -32,9 +30,8 @@ public class PlayerModel : MonoBehaviour
         Life = MaxLife;
     }
 
-    /// <summary>
-    /// Intenta un salto. Dispara OnJump o OnDoubleJump según corresponda.
-    /// </summary>
+
+    // Intenta un salto. Dispara OnJump o OnDoubleJump según corresponda.
     public bool UseJump()
     {
         if (JumpsLeft <= 0) return false;
@@ -46,26 +43,21 @@ public class PlayerModel : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    /// Invocado al caer (por parte del Controller cuando la velocidad vertical es negativa).
-    /// </summary>
+
+    // Invocado al caer (por parte del Controller cuando la velocidad vertical es negativa).
     public void Fall()
     {
         OnFall?.Invoke();
     }
 
-    /// <summary>
-    /// Recarga saltos y dispara OnLand.
-    /// </summary>
+    // Recarga saltos y dispara OnLand.
     public void Land()
     {
         JumpsLeft = MaxJumps;
         OnLand?.Invoke();
     }
 
-    /// <summary>
-    /// Intenta hacer dash y dispara OnDash.
-    /// </summary>
+    // Intenta hacer dash y dispara OnDash.
     public bool UseDash()
     {
         if (!CanDash) return false;
@@ -81,9 +73,7 @@ public class PlayerModel : MonoBehaviour
         CanDash = true;
     }
 
-    /// <summary>
-    /// El jugador recibe daño.
-    /// </summary>
+    // El jugador recibe daño.
     public void TakeDamage()
     {
         Life--;

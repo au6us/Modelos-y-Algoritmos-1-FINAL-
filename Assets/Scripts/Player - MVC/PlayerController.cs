@@ -2,7 +2,8 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerModel), typeof(Rigidbody2D))]
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour 
+{
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundRadius = 0.1f;

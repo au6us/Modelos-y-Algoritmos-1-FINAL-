@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
     private bool wasGrounded;
     private bool isGrounded;
 
+    private float lastFacing = 1f;
+
     private void Awake() {
         model = GetComponent<PlayerModel>();
         view = GetComponent<PlayerView>();
@@ -60,15 +62,19 @@ public class PlayerController : MonoBehaviour
         float h = (Input.GetKey(KeyCode.D) ? 1f : 0f) + (Input.GetKey(KeyCode.A) ? -1f : 0f);
         moveInput = new Vector2(h, 0f);
 
+        if (h != 0f)
+        {
+            lastFacing = Mathf.Sign(h);
+        }
+
         // Salto
         if (Input.GetKeyDown(KeyCode.W) && model.UseJump()) {
             rb.velocity = new Vector2(rb.velocity.x, model.JumpForce);
         }
 
-        // Dash
-        if (Input.GetKeyDown(KeyCode.S) && model.UseDash()) {
-            float dir = h != 0f ? Mathf.Sign(h) : transform.localScale.x;
-            StartCoroutine(DashRoutine(dir));
+        if (Input.GetKeyDown(KeyCode.S) && model.UseDash())
+        {
+            StartCoroutine(DashRoutine(lastFacing)); // ahora respeta hacia dónde mira
         }
     }
 

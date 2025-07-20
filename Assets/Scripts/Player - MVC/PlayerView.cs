@@ -21,13 +21,7 @@ public class PlayerView : MonoBehaviour
 
     private SpriteRenderer sr;
     private Animator anim;
-    private Rigidbody2D rb;
 
-    private System.Action onJumpHandler;
-    private System.Action onDoubleJumpHandler;
-    private System.Action onLandHandler;
-    private System.Action onDamageHandler;
-    private System.Action onDashHandler;
 
     private void Awake()
     {
@@ -60,28 +54,37 @@ public class PlayerView : MonoBehaviour
             dashSFX.Play();
             dashParticles.Play();
         };
-
-
-        model.OnJump += onJumpHandler;
-        model.OnDoubleJump += onDoubleJumpHandler;
-        model.OnLand += onLandHandler;
-        model.OnDamage += onDamageHandler;
-        model.OnDash += onDashHandler;
     }
 
     private void OnDisable()
     {
-        model.OnJump -= onJumpHandler;
-        model.OnDoubleJump -= onDoubleJumpHandler;
-        model.OnLand -= onLandHandler;
-        model.OnDamage -= onDamageHandler;
-        model.OnDash -= onDashHandler;
     }
 
     public void HandleMove(Vector2 velocity)
     {
         anim.SetFloat("Speed", Mathf.Abs(velocity.x));
-        sr.flipX = velocity.x < 0f; 
+
+        // Actualiza en donde mira el player, antes se quedaba mirando siempre a la derecha cuando se dejaba de caminar
+        if (velocity.x != 0)
+        {
+            sr.flipX = velocity.x < 0f;
+        }
+
+        // Para los sonidos de pasos 
+        bool isMoving = Mathf.Abs(velocity.x) > 0.1f;
+        bool isGrounded = anim.GetBool("isGround");
+
+        if (isMoving && isGrounded)
+        {
+            if (!footstepSFX.isPlaying)
+            {
+                footstepSFX.Play();
+            }
+        }
+        else if (footstepSFX.isPlaying)
+        {
+            footstepSFX.Stop();
+        }
     }
 
     public void SetJump(bool jumping)

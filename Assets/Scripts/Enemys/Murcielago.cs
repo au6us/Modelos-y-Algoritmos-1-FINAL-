@@ -1,42 +1,38 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Murcielago : Entity
+public class Murcielago : EnemyBase
 {
-    [SerializeField] public Transform player;
+    [SerializeField] private Transform player;
+    [SerializeField] private float speed;
+    [SerializeField] private float maxDistance;
+    private Vector3 startPos;
+    private SpriteRenderer sr;
 
-    [SerializeField] private float distancia;
-
-    public Vector3 puntoInicial;
-
-    private Animator animator;
-
-    private SpriteRenderer spriteRenderer;
-
-    private void Start()
+    protected override void Awake()
     {
-        animator = GetComponent<Animator>();
-        puntoInicial = transform.position;
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        base.Awake();
+        startPos = transform.position;
+        sr = GetComponent<SpriteRenderer>();
     }
 
-    private void Update()
+    protected override void UpdateBehavior()
     {
-        distancia = Vector2.Distance(transform.position, player.position);
-        animator.SetFloat("Distancia", distancia);
-    }
-
-    public void Girar(Vector3 objetivo)
-    {
-        if(transform.position.x < objetivo.x)
+        float d = Vector2.Distance(transform.position, player.position);
+        if (d < maxDistance)
         {
-            spriteRenderer.flipX = true;
+            transform.position = Vector2.MoveTowards(transform.position,
+                                                     player.position,
+                                                     speed * Time.deltaTime);
+            anim.Play("Bat_Fly");
+            sr.flipX = player.position.x < transform.position.x;
         }
         else
         {
-            spriteRenderer.flipX = false;
+            transform.position = Vector2.MoveTowards(transform.position,
+                                                     startPos,
+                                                     speed * Time.deltaTime);
+            anim.Play("Bat_Idle");
+            sr.flipX = startPos.x < transform.position.x;
         }
     }
-
 }

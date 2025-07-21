@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 2353727846965738357}
   - component: {fileID: 7952545010060492916}
   - component: {fileID: 5639710619602482484}
-  - component: {fileID: 4093162787329682104}
   - component: {fileID: 5338297919619869460}
   - component: {fileID: 6125102674571717209}
+  - component: {fileID: 6672460914723522093}
   m_Layer: 0
   m_Name: Manzana
   m_TagString: Untagged
@@ -109,24 +109,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &4093162787329682104
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8176955084663395575}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f74d1934da00ee145b1f158d9f029843, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  efecto: {fileID: 3567936551083611455, guid: 6edbbdd1115e2d5439c73e98858f922e, type: 3}
-  cantidadPuntos: 20
-  puntaje: {fileID: 0}
-  eatSound: {fileID: 6125102674571717209}
-  curacion: 1
-  floatingTextPrefab: {fileID: 205888279292352923, guid: b58aad2b5f7956c40b93e77c38ce2c00, type: 3}
 --- !u!58 &5338297919619869460
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -258,3 +240,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6672460914723522093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8176955084663395575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07568451f861596459e7134da20ecb19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fruitPoints: 20
+  healAmount: 1
+  collectSFX: {fileID: 6125102674571717209}
+  collectVFX: {fileID: 0}

@@ -16,13 +16,12 @@ public class PlayerModel : MonoBehaviour
     public bool CanDash { get; private set; } = true;
     public int Life { get; private set; }
 
-    // Eventos
-    public event Action OnJump;           // Salto normal
-    public event Action OnDoubleJump;     // Doble salto
-    public event Action OnFall;           // Inicio de caída
-    public event Action OnLand;           // Aterrizaje
-    public event Action OnDash;           // Dash
-    public event Action OnDamage;         // Daño recibido
+    public event Action OnJump;
+    public event Action OnDoubleJump;
+    public event Action OnFall;
+    public event Action OnLand;
+    public event Action OnDash;
+    public event Action OnDamage;
 
     private void Awake()
     {
@@ -30,34 +29,22 @@ public class PlayerModel : MonoBehaviour
         Life = MaxLife;
     }
 
-
-    // Intenta un salto. Dispara OnJump o OnDoubleJump según corresponda.
     public bool UseJump()
     {
         if (JumpsLeft <= 0) return false;
         JumpsLeft--;
-        if (JumpsLeft == MaxJumps - 1)
-            OnJump?.Invoke();        // Primer salto
-        else
-            OnDoubleJump?.Invoke();  // Segundo salto
+        if (JumpsLeft == MaxJumps - 1) OnJump?.Invoke();
+        else OnDoubleJump?.Invoke();
         return true;
     }
 
-
-    // Invocado al caer (por parte del Controller cuando la velocidad vertical es negativa).
-    public void Fall()
-    {
-        OnFall?.Invoke();
-    }
-
-    // Recarga saltos y dispara OnLand.
+    public void Fall() => OnFall?.Invoke();
     public void Land()
     {
         JumpsLeft = MaxJumps;
         OnLand?.Invoke();
     }
 
-    // Intenta hacer dash y dispara OnDash.
     public bool UseDash()
     {
         if (!CanDash) return false;
@@ -73,10 +60,18 @@ public class PlayerModel : MonoBehaviour
         CanDash = true;
     }
 
-    // El jugador recibe daño.
     public void TakeDamage()
     {
         Life--;
         OnDamage?.Invoke();
+    }
+
+    /// <summary>
+    /// Cura al jugador, respetando el máximo de vida.
+    /// </summary>
+    public void Heal(int amount)
+    {
+        Life = Mathf.Min(Life + amount, MaxLife);
+        // Aquí podrías emitir un OnHeal si lo necesitas
     }
 }

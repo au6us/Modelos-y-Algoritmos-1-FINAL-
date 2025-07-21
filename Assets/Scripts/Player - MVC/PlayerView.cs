@@ -7,21 +7,13 @@ public class PlayerView : MonoBehaviour
     [SerializeField] private PlayerModel model;
 
     [Header("Audio Sources")]
-    [SerializeField] private AudioSource jumpSFX;
-    [SerializeField] private AudioSource doubleJumpSFX;
-    [SerializeField] private AudioSource hitSFX;
-    [SerializeField] private AudioSource dashSFX;
-    [SerializeField] private AudioSource footstepSFX;
+    [SerializeField] private AudioSource jumpSFX, doubleJumpSFX, hitSFX, dashSFX, footstepSFX;
 
     [Header("Particle Systems")]
-    [SerializeField] private ParticleSystem jumpParticles;
-    [SerializeField] private ParticleSystem doubleJumpParticles;
-    [SerializeField] private ParticleSystem landParticles;
-    [SerializeField] private ParticleSystem dashParticles;
+    [SerializeField] private ParticleSystem jumpParticles, doubleJumpParticles, landParticles, dashParticles;
 
     private SpriteRenderer sr;
     private Animator anim;
-
 
     private void Awake()
     {
@@ -31,86 +23,28 @@ public class PlayerView : MonoBehaviour
 
     private void OnEnable()
     {
-        model.OnJump += () => {anim.SetBool("Jump", true);
-            jumpSFX.Play();
-            jumpParticles.Play();
-        };
-
-        model.OnDoubleJump += () => {anim.SetBool("isDouble", true);
-            doubleJumpSFX.Play();
-            doubleJumpParticles.Play();
-        };
-
-        model.OnLand += () => {ResetStatesOnLand();
-            landParticles.Play();
-        };
-
-        model.OnDamage += () => {SetHurt(true);
-            hitSFX.Play();
-
-        };
-
-        model.OnDash += () => {
-            dashSFX.Play();
-            dashParticles.Play();
-        };
+        model.OnJump += () => { anim.SetBool("Jump", true); jumpSFX.Play(); jumpParticles.Play(); };
+        model.OnDoubleJump += () => { anim.SetBool("isDouble", true); doubleJumpSFX.Play(); doubleJumpParticles.Play(); };
+        model.OnLand += () => { anim.SetBool("isGround", true); landParticles.Play(); };
+        model.OnDash += () => { anim.SetTrigger("Dash"); dashSFX.Play(); dashParticles.Play(); };
+        model.OnDamage += () => { anim.SetTrigger("Hurt"); hitSFX.Play(); };
     }
 
-    private void OnDisable()
+    public void HandleMove(Vector2 vel)
     {
+        anim.SetFloat("Speed", Mathf.Abs(vel.x));
+        if (vel.x != 0f) sr.flipX = vel.x < 0f;
+
+        bool moving = Mathf.Abs(vel.x) > 0.1f;
+        bool grounded = anim.GetBool("isGround");
+        if (moving && grounded && !footstepSFX.isPlaying) footstepSFX.Play();
+        else if ((!moving || !grounded) && footstepSFX.isPlaying) footstepSFX.Stop();
     }
 
-    public void HandleMove(Vector2 velocity)
-    {
-        anim.SetFloat("Speed", Mathf.Abs(velocity.x));
-
-        // Actualiza en donde mira el player, antes se quedaba mirando siempre a la derecha cuando se dejaba de caminar
-        if (velocity.x != 0)
-        {
-            sr.flipX = velocity.x < 0f;
-        }
-
-        // Para los sonidos de pasos 
-        bool isMoving = Mathf.Abs(velocity.x) > 0.1f;
-        bool isGrounded = anim.GetBool("isGround");
-
-        if (isMoving && isGrounded)
-        {
-            if (!footstepSFX.isPlaying)
-            {
-                footstepSFX.Play();
-            }
-        }
-        else if (footstepSFX.isPlaying)
-        {
-            footstepSFX.Stop();
-        }
-    }
-
-    public void SetJump(bool jumping)
-    {
-        anim.SetBool("Jump", jumping);
-    }
-
-    public void SetFall(bool falling)
-    {
-        anim.SetBool("Fall", falling);
-    }
-
-    public void SetGrounded(bool grounded)
-    {
-        anim.SetBool("isGround", grounded);
-    }
-
-    public void SetDouble(bool isDouble)
-    {
-        anim.SetBool("isDouble", isDouble);
-    }
-
-    public void SetHurt(bool hurt)
-    {
-        anim.SetBool("Hurt", hurt);
-    }
+    public void SetJump(bool j) => anim.SetBool("Jump", j);
+    public void SetFall(bool f) => anim.SetBool("Fall", f);
+    public void SetGrounded(bool g) => anim.SetBool("isGround", g);
+    public void SetDouble(bool d) => anim.SetBool("isDouble", d);
 
     public void ResetStatesOnLand()
     {
@@ -118,17 +52,9 @@ public class PlayerView : MonoBehaviour
         anim.SetBool("isDouble", false);
         anim.SetBool("Fall", false);
         anim.SetBool("isGround", true);
-        anim.SetBool("Dash", false);
-        anim.SetBool("Hurt", false);
+        anim.ResetTrigger("Dash");
+        anim.ResetTrigger("Hurt");
     }
 
-    public void ResetDash()
-    {
-        anim.SetBool("Dash", false);
-    }
-
-    public void ResetHurt()
-    {
-        anim.SetBool("Hurt", false);
-    }
+    public void ResetDash() => anim.ResetTrigger("Dash");
 }

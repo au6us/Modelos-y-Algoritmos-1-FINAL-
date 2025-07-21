@@ -1,24 +1,22 @@
 using UnityEngine;
 
-[RequireComponent(typeof(BoxCollider2D))]
+[RequireComponent(typeof(Collider2D))]
 public class StompDetector : MonoBehaviour
 {
-    private EnemyBase enemy;
+    [SerializeField] private EnemyBase enemy;
+    [SerializeField] private float reboundForce = 10f;
+    [SerializeField] private LayerMask playerLayer;
 
-    private void Awake()
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        enemy = GetComponentInParent<EnemyBase>();
-    }
+        if (((1 << collision.gameObject.layer) & playerLayer) == 0)
+            return;
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (enemy == null || !other.CompareTag("Player")) return;
-
-        var rb = other.attachedRigidbody;
-        if (rb != null && rb.velocity.y < 0f)
+        PlayerController player = collision.collider.GetComponent<PlayerController>();
+        if (player != null)
         {
-            other.GetComponent<PlayerController>()?.Rebound(Vector2.up);
-            enemy.Die();
+            player.Rebound(Vector2.up * reboundForce); // rebota hacia arriba
+            enemy.Die(); // mata al enemigo
         }
     }
 }

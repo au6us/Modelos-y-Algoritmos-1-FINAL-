@@ -31,13 +31,20 @@ public abstract class EnemyBase : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D c)
     {
-        // Solo knockback lateral, sin matar al enemigo
-        if (((1 << c.gameObject.layer) & playerLayer) != 0 &&
-            Mathf.Abs(c.relativeVelocity.x) > 0.5f)
+        if (isDead) return;
+
+        if (((1 << c.gameObject.layer) & playerLayer) != 0)
         {
-            var player = c.collider.GetComponent<PlayerController>();
-            if (player != null)
-                player.Rebound(c.GetContact(0).normal);
+            ContactPoint2D contact = c.GetContact(0);
+            Vector2 normal = contact.normal;
+
+            // Si me tocaron de costado (no de arriba)
+            if (Mathf.Abs(normal.y) < 0.5f && Mathf.Abs(normal.x) > 0.5f)
+            {
+                var player = c.collider.GetComponent<PlayerController>();
+                if (player != null)
+                    player.Rebound(normal);
+            }
         }
     }
 
@@ -49,9 +56,9 @@ public abstract class EnemyBase : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
-        col.enabled = false;            // quita colisión
+        // NO SE QUITA EL COLLIDER
         anim.SetBool("Walk", false);
-        anim.SetBool("Die", true);      // muestra animación de muerte
+        anim.SetBool("Die", true);
 
         OnDie?.Invoke(this);
         GameEventManager.EnemyKilled(pointValue);
@@ -62,19 +69,15 @@ public abstract class EnemyBase : MonoBehaviour
     private IEnumerator ReturnToPool()
     {
         yield return new WaitForSeconds(deathAnimDuration);
-        // resetear estado
         isDead = false;
         anim.SetBool("Die", false);
-        // dejar limpio para patrullar de nuevo
         ResetAfterDeath();
         PoolManager.Instance.Release(this);
     }
 
-    /// <summary>
-    /// Aquí resetea cualquier estado específico antes de volver al pool.
-    /// </summary>
     protected virtual void ResetAfterDeath()
     {
-        col.enabled = true;
+        // Nada que hacer si no desactivamos el collider
+        // Pero igual podés resetear animaciones acá si querés
     }
 }

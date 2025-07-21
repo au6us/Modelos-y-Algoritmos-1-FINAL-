@@ -9,11 +9,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
 
+    [Header("Rebound")]
+    [SerializeField] private float reboundPower = 15f;
+
     private PlayerModel model;
     private PlayerView view;
     private Rigidbody2D rb;
     private Vector2 moveInput;
-    private bool isDashing, wasGrounded, isGrounded;
+    private bool isDashing;
+    private bool wasGrounded;
+    private bool isGrounded;
+
     private float lastFacing = 1f;
 
     private void Awake()
@@ -23,7 +29,10 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    private void Update() => ProcessInput();
+    private void Update()
+    {
+        ProcessInput();
+    }
 
     private void FixedUpdate()
     {
@@ -46,16 +55,18 @@ public class PlayerController : MonoBehaviour
             bool falling = rb.velocity.y < -0.1f;
             view.SetJump(rising && !isGrounded);
             view.SetFall(falling && !isGrounded);
+
             view.SetDouble(model.JumpsLeft < model.MaxJumps - 1);
         }
     }
 
     private void ProcessInput()
     {
-        float h = (Input.GetKey(KeyCode.D) ? 1f : 0f)
-                + (Input.GetKey(KeyCode.A) ? -1f : 0f);
+        float h = (Input.GetKey(KeyCode.D) ? 1f : 0f) + (Input.GetKey(KeyCode.A) ? -1f : 0f);
         moveInput = new Vector2(h, 0f);
-        if (h != 0f) lastFacing = Mathf.Sign(h);
+
+        if (h != 0f)
+            lastFacing = Mathf.Sign(h);
 
         if (Input.GetKeyDown(KeyCode.W) && model.UseJump())
             rb.velocity = new Vector2(rb.velocity.x, model.JumpForce);
@@ -64,25 +75,22 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(DashRoutine(lastFacing));
     }
 
-    private IEnumerator DashRoutine(float dir)
+    private IEnumerator DashRoutine(float direction)
     {
         isDashing = true;
-        float origG = rb.gravityScale;
+        float originalGravity = rb.gravityScale;
         rb.gravityScale = 0f;
-        rb.velocity = new Vector2(dir * model.DashSpeed, 0f);
+        rb.velocity = new Vector2(direction * model.DashSpeed, 0f);
         yield return new WaitForSeconds(model.DashDuration);
-        rb.gravityScale = origG;
+        rb.gravityScale = originalGravity;
         isDashing = false;
         view.ResetDash();
     }
 
-    /// <summary>
-    /// Rebote y daño al ser golpeado desde un costado.
-    /// </summary>
-    public void Rebound(Vector2 collisionNormal)
+    public void Rebound(Vector2 direction)
     {
-        rb.velocity = new Vector2(collisionNormal.x * 5f, 5f);
-        model.TakeDamage();
+        rb.velocity = Vector2.zero;
+        rb.AddForce(direction.normalized * reboundPower, ForceMode2D.Impulse);
     }
 
     private void OnDrawGizmosSelected()

@@ -57,7 +57,7 @@ Transform:
   m_GameObject: {fileID: 5814303362999773505}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.054, y: -0.463, z: 0}
+  m_LocalPosition: {x: 0.034, y: -0.463, z: 0}
   m_LocalScale: {x: 0.27392578, y: 0.067640625, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -153,6 +153,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a845ab44445aab441bfe0cb53970da68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemy: {fileID: 2805484627888900743}
+  reboundForce: 10
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!61 &3149580219568162844
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -182,10 +187,10 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.0010589063, y: 0.11439035}
+  m_Offset: {x: -0.0010589063, y: 0.072974555}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -196,7 +201,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.62505466, y: 0.165374}
+  m_Size: {x: 0.62505466, y: 0.10045193}
   m_EdgeRadius: 0
 --- !u!1 &7885508532824944186
 GameObject:
@@ -428,7 +433,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.15718317}
+  m_Offset: {x: 0, y: -0.24896957}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -439,7 +444,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8162956, y: 0.68563366}
+  m_Size: {x: 0.8162956, y: 0.5020609}
   m_EdgeRadius: 0
 --- !u!114 &2805484627888900743
 MonoBehaviour:
@@ -457,6 +462,7 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
+  deathAnimDuration: 0.5
   speed: 3
   groundLayer:
     serializedVersion: 2
@@ -538,7 +544,7 @@ MonoBehaviour:
   - {x: -0.088786475, y: -0.5033395, z: 0}
   m_ShapePathHash: 2016627418
   m_Mesh: {fileID: 0}
-  m_InstanceId: 58338
+  m_InstanceId: 80816
   m_LocalBounds:
     m_Center: {x: -0.000017434359, y: -0.19138438, z: 0}
     m_Extent: {x: 0.40767694, y: 0.31550956, z: 0}

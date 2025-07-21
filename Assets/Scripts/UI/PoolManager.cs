@@ -4,20 +4,13 @@ using UnityEngine;
 public class PoolManager : MonoBehaviour
 {
     public static PoolManager Instance { get; private set; }
-
-    private class Pool
-    {
-        public readonly Queue<EnemyBase> queue = new Queue<EnemyBase>();
-        public readonly EnemyBase prefab;
-        public Pool(EnemyBase p) { prefab = p; }
-    }
-
-    private Dictionary<EnemyBase, Pool> pools = new Dictionary<EnemyBase, Pool>();
+    private class Pool { public Queue<EnemyBase> queue = new(); public EnemyBase prefab; public Pool(EnemyBase p) { prefab = p; } }
+    private Dictionary<EnemyBase, Pool> pools = new();
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        else { Destroy(gameObject); return; }
     }
 
     public EnemyBase Get(EnemyBase prefab, Vector3 pos, Quaternion rot)
@@ -28,25 +21,25 @@ public class PoolManager : MonoBehaviour
             pools[prefab] = pool;
         }
 
-        EnemyBase instance;
+        EnemyBase inst;
         if (pool.queue.Count > 0)
         {
-            instance = pool.queue.Dequeue();
-            instance.gameObject.SetActive(true);
-            instance.transform.SetPositionAndRotation(pos, rot);
+            inst = pool.queue.Dequeue();
+            inst.gameObject.SetActive(true);
+            inst.transform.SetPositionAndRotation(pos, rot);
         }
-        else
-        {
-            instance = Instantiate(prefab, pos, rot);
-        }
+        else inst = Instantiate(prefab, pos, rot);
 
-        instance.Prefab = prefab;
-        return instance;
+        // Reactivar todos los colliders
+        foreach (var c in inst.GetComponentsInChildren<Collider2D>(true))
+            c.enabled = true;
+
+        return inst;
     }
 
-    public void Release(EnemyBase instance)
+    public void Release(EnemyBase inst)
     {
-        instance.gameObject.SetActive(false);
-        pools[instance.Prefab].queue.Enqueue(instance);
+        inst.gameObject.SetActive(false);
+        pools[inst.Prefab].queue.Enqueue(inst);
     }
 }

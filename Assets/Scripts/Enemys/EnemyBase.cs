@@ -9,9 +9,11 @@ public abstract class EnemyBase : MonoBehaviour
 
     [SerializeField] protected int pointValue = 100;
     [SerializeField] protected LayerMask playerLayer;
+    [SerializeField] protected float deathAnimDuration = 0.5f;
 
     protected Animator anim;
     protected Collider2D col;
+    protected bool isDead = false;
 
     protected virtual void Awake()
     {
@@ -21,33 +23,58 @@ public abstract class EnemyBase : MonoBehaviour
 
     private void Update()
     {
-        UpdateBehavior();
+        if (!isDead)
+            UpdateBehavior();
     }
 
     protected abstract void UpdateBehavior();
 
     private void OnCollisionEnter2D(Collision2D c)
     {
-        if (((1 << c.gameObject.layer) & playerLayer) != 0
-            && Mathf.Abs(c.relativeVelocity.x) > 0.5f)
+        // Solo knockback lateral, sin matar al enemigo
+        if (((1 << c.gameObject.layer) & playerLayer) != 0 &&
+            Mathf.Abs(c.relativeVelocity.x) > 0.5f)
         {
-            c.collider.GetComponent<PlayerController>()
-             .Rebound(c.GetContact(0).normal);
+            var player = c.collider.GetComponent<PlayerController>();
+            if (player != null)
+                player.Rebound(c.GetContact(0).normal);
         }
     }
 
+    /// <summary>
+    /// Llamado por StompDetector al pisar al enemigo.
+    /// </summary>
     public void Die()
     {
-        col.enabled = false;
-        anim.SetTrigger("Die");
+        if (isDead) return;
+        isDead = true;
+
+        col.enabled = false;            // quita colisión
+        anim.SetBool("Walk", false);
+        anim.SetBool("Die", true);      // muestra animación de muerte
+
         OnDie?.Invoke(this);
         GameEventManager.EnemyKilled(pointValue);
-        StartCoroutine(ReturnToPoolAfterDelay(0.5f));
+
+        StartCoroutine(ReturnToPool());
     }
 
-    private IEnumerator ReturnToPoolAfterDelay(float delay)
+    private IEnumerator ReturnToPool()
     {
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSeconds(deathAnimDuration);
+        // resetear estado
+        isDead = false;
+        anim.SetBool("Die", false);
+        // dejar limpio para patrullar de nuevo
+        ResetAfterDeath();
         PoolManager.Instance.Release(this);
+    }
+
+    /// <summary>
+    /// Aquí resetea cualquier estado específico antes de volver al pool.
+    /// </summary>
+    protected virtual void ResetAfterDeath()
+    {
+        col.enabled = true;
     }
 }

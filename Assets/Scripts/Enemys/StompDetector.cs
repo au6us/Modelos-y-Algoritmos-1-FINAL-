@@ -12,11 +12,12 @@ public class StompDetector : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player") &&
-            other.attachedRigidbody.velocity.y < 0f)
+        if (enemy == null || !other.CompareTag("Player")) return;
+
+        var rb = other.attachedRigidbody;
+        if (rb != null && rb.velocity.y < 0f)
         {
-            other.GetComponent<PlayerController>()
-                 .Rebound(Vector2.up);
+            other.GetComponent<PlayerController>()?.Rebound(Vector2.up);
             enemy.Die();
         }
     }

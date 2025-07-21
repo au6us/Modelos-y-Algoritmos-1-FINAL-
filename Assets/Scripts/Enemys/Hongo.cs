@@ -7,12 +7,11 @@ public class Hongo : EnemyBase
     private int direction = 1;
 
     [Header("Checks")]
-    [Tooltip("Capa de suelo y muros")]
-    [SerializeField] private LayerMask groundLayer;             // aquí pones Floor
-    [SerializeField] private float groundCheckDistance = 0.2f;   // bajo el pie
-    [SerializeField] private float wallCheckDistance = 0.1f;   // frente al torso
-    [SerializeField] private Transform groundCheckPoint;        // hijo bajo el pie
-    [SerializeField] private Transform wallCheckPoint;          // hijo frente al pecho
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private float groundCheckDistance = 0.2f;
+    [SerializeField] private float wallCheckDistance = 0.1f;
+    [SerializeField] private Transform groundCheckPoint;
+    [SerializeField] private Transform wallCheckPoint;
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
@@ -26,15 +25,13 @@ public class Hongo : EnemyBase
 
     protected override void UpdateBehavior()
     {
-        // 1) Compruebo suelo delante
+        // raycast suelo y pared
         bool isGroundAhead = Physics2D.Raycast(
             groundCheckPoint.position,
             Vector2.down,
             groundCheckDistance,
             groundLayer
         );
-
-        // 2) Compruebo muro delante
         bool isWallAhead = Physics2D.Raycast(
             wallCheckPoint.position,
             Vector2.right * direction,
@@ -42,35 +39,13 @@ public class Hongo : EnemyBase
             groundLayer
         );
 
-        // Si no hay suelo o hay muro, invierto
         if (!isGroundAhead || isWallAhead)
             direction *= -1;
 
-        // 3) Muevo
         rb.velocity = new Vector2(direction * speed, rb.velocity.y);
 
-        // 4) Animación y flip
-        anim.Play("Hongo_Walk");
+        // animación patrulla
+        anim.SetBool("Walk", true);
         sr.flipX = direction > 0;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (groundCheckPoint)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(
-                groundCheckPoint.position,
-                groundCheckPoint.position + Vector3.down * groundCheckDistance
-            );
-        }
-        if (wallCheckPoint)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(
-                wallCheckPoint.position,
-                wallCheckPoint.position + Vector3.right * direction * wallCheckDistance
-            );
-        }
     }
 }

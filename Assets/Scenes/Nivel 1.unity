@@ -5329,6 +5329,55 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2353727846965738357, guid: 0b0fd998d0f84bf45b36f0f8d1765d45, type: 3}
   m_PrefabInstance: {fileID: 45134507}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &58178669
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 58178671}
+  - component: {fileID: 58178670}
+  m_Layer: 0
+  m_Name: SPAWNER TRONQUITOS
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &58178670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 58178669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1f2882d6bfbb114bad684592c86fedb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  factory: {fileID: 16282119}
+  enemyType: Tronco
+  respawnTime: 1
+  spawnPoint: {fileID: 1386137076}
+--- !u!4 &58178671
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 58178669}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 22.09, y: 16.08, z: 0.0017809868}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1386137076}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &59939555
 GameObject:
   m_ObjectHideFlags: 0
@@ -56719,7 +56768,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.4328797, y: 14.9946575, z: -10}
+  m_LocalPosition: {x: 15, y: 19.15, z: -10}
   m_LocalScale: {x: 2, y: 1.25, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -59669,7 +59718,7 @@ Transform:
   m_GameObject: {fileID: 830042450}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.2, y: 13.4, z: 0}
+  m_LocalPosition: {x: 15, y: 17.55, z: 0}
   m_LocalScale: {x: 1.6778703, y: 1.6778703, z: 1.6778703}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -60216,7 +60265,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MoveSpeed: 5
-  JumpForce: 12
+  JumpForce: 10
   MaxJumps: 100
   DashSpeed: 20
   DashDuration: 0.2
@@ -60240,6 +60289,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   reboundPower: 10
+  knockbackDuration: 0.3
 --- !u!1 &840790029
 GameObject:
   m_ObjectHideFlags: 0
@@ -60678,7 +60728,7 @@ GameObject:
   - component: {fileID: 920013125}
   - component: {fileID: 920013124}
   m_Layer: 0
-  m_Name: SPAWNERS ENEMYS
+  m_Name: SPAWNER HONGO
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -67931,7 +67981,7 @@ Transform:
   m_GameObject: {fileID: 1298796066}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.4383404, y: 17.11939, z: -9.943008}
+  m_LocalPosition: {x: 17.23834, y: 21.26939, z: -9.943008}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -73320,6 +73370,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1386137075
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1386137076}
+  m_Layer: 0
+  m_Name: TRONQUITOS
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1386137076
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386137075}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.03, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 58178671}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1392159786
 GameObject:
   m_ObjectHideFlags: 0
@@ -97236,4 +97317,5 @@ SceneRoots:
   - {fileID: 683283051}
   - {fileID: 328419502}
   - {fileID: 920013125}
+  - {fileID: 58178671}
   - {fileID: 16282120}

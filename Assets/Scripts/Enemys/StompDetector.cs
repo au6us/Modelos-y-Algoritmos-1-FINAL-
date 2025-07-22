@@ -7,8 +7,13 @@ public class StompDetector : MonoBehaviour
     [SerializeField] private float reboundForce = 10f;
     [SerializeField] private LayerMask playerLayer;
 
+    [SerializeField] private AudioSource deathSFX;
+
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        deathSFX.Play();
+
         if (((1 << collision.gameObject.layer) & playerLayer) == 0)
             return;
 

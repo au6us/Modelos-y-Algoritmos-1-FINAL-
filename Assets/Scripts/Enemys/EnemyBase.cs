@@ -17,6 +17,8 @@ public abstract class EnemyBase : MonoBehaviour
     protected Rigidbody2D enemyRb;
     protected bool isDead = false;
 
+
+
     protected virtual void Awake()
     {
         anim = GetComponent<Animator>();

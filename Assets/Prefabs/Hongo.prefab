@@ -158,6 +158,7 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
+  deathSFX: {fileID: 2863816376766939666}
 --- !u!61 &3149580219568162844
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -463,6 +464,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   deathAnimDuration: 0.5
+  deathSFX: {fileID: 0}
   speed: 3
   groundLayer:
     serializedVersion: 2
@@ -544,7 +546,7 @@ MonoBehaviour:
   - {x: -0.088786475, y: -0.5033395, z: 0}
   m_ShapePathHash: 2016627418
   m_Mesh: {fileID: 0}
-  m_InstanceId: 53468
+  m_InstanceId: 55082
   m_LocalBounds:
     m_Center: {x: -0.000017434359, y: -0.19138438, z: 0}
     m_Extent: {x: 0.40767694, y: 0.31550956, z: 0}

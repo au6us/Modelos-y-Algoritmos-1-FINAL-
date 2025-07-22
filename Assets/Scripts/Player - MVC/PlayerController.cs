@@ -10,7 +10,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
 
     [Header("Rebound")]
-    [SerializeField] private float reboundPower = 15f;
+    [SerializeField] private float reboundPower = 20f;
+    [SerializeField] private float knockbackDuration = 0.3f;
 
     private PlayerModel model;
     private PlayerView view;
@@ -19,8 +20,10 @@ public class PlayerController : MonoBehaviour
     private bool isDashing;
     private bool wasGrounded;
     private bool isGrounded;
-
+    private bool isKnockback;
+    private float knockbackTimer;
     private float lastFacing = 1f;
+    private float originalGravity;
 
     public static PlayerController Instance { get; private set; }
 
@@ -30,10 +33,23 @@ public class PlayerController : MonoBehaviour
         model = GetComponent<PlayerModel>();
         view = GetComponent<PlayerView>();
         rb = GetComponent<Rigidbody2D>();
+        originalGravity = rb.gravityScale;
     }
 
     private void Update()
     {
+        if (isKnockback)
+        {
+            // Bloquear entrada durante knockback
+            moveInput = Vector2.zero;
+            knockbackTimer -= Time.deltaTime;
+            if (knockbackTimer <= 0)
+            {
+                isKnockback = false;
+            }
+            return;
+        }
+
         ProcessInput();
     }
 
@@ -49,7 +65,8 @@ public class PlayerController : MonoBehaviour
             view.ResetStatesOnLand();
         }
 
-        if (!isDashing)
+        // Solo aplicar movimiento si no está en dash o knockback
+        if (!isDashing && !isKnockback)
         {
             rb.velocity = new Vector2(moveInput.x * model.MoveSpeed, rb.velocity.y);
             view.HandleMove(rb.velocity);
@@ -81,7 +98,6 @@ public class PlayerController : MonoBehaviour
     private IEnumerator DashRoutine(float direction)
     {
         isDashing = true;
-        float originalGravity = rb.gravityScale;
         rb.gravityScale = 0f;
         rb.velocity = new Vector2(direction * model.DashSpeed, 0f);
         yield return new WaitForSeconds(model.DashDuration);
@@ -92,15 +108,39 @@ public class PlayerController : MonoBehaviour
 
     public void Rebound(Vector2 direction)
     {
+        // Cancelar dash si está activo
+        if (isDashing)
+        {
+            StopAllCoroutines();
+            rb.gravityScale = originalGravity;
+            isDashing = false;
+            view.ResetDash();
+        }
+
+        // Aplicar knockback
+        StartCoroutine(ApplyKnockback(direction));
+    }
+
+    private IEnumerator ApplyKnockback(Vector2 direction)
+    {
+        isKnockback = true;
+        knockbackTimer = knockbackDuration;
+
+        // Resetear velocidad y aplicar fuerza
         rb.velocity = Vector2.zero;
-        // Añadir un pequeño componente vertical al knockback
-        direction.y = 0.2f; // 20% de componente vertical
         rb.AddForce(direction.normalized * reboundPower, ForceMode2D.Impulse);
+
+        // Bloquear entrada durante el knockback
+        moveInput = Vector2.zero;
+
+        // Esperar a que termine el knockback
+        yield return new WaitForSeconds(knockbackDuration);
+        isKnockback = false;
     }
 
     public void TakeDamage()
     {
-        model.TakeDamage(); // Resta vida + dispara animación Hurt
+        model.TakeDamage();
     }
 
     private void OnDrawGizmosSelected()

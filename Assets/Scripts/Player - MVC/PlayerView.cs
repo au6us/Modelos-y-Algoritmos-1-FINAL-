@@ -38,6 +38,9 @@ public class PlayerView : MonoBehaviour
         bool grounded = anim.GetBool("isGround");
         if (moving && grounded && !footstepSFX.isPlaying) footstepSFX.Play();
         else if ((!moving || !grounded) && footstepSFX.isPlaying) footstepSFX.Stop();
+
+        anim.SetBool("Hurt", false);
+
     }
 
     public void SetJump(bool j) => anim.SetBool("Jump", j);

@@ -59,10 +59,10 @@ public abstract class EnemyBase : MonoBehaviour
     private Vector2 CalculateKnockbackDirection(Vector2 playerPosition)
     {
         // Calcular diferencia de posiciones
-        float relativePositionX = transform.position.x - playerPosition.x;
+        float relativePositionX = playerPosition.x - transform.position.x;
 
-        // Determinar dirección horizontal (opuesta al jugador)
-        float horizontalDirection = relativePositionX > 0 ? 1 : -1;
+        // Determinar dirección horizontal (misma dirección que el punto de contacto)
+        float horizontalDirection = Mathf.Sign(relativePositionX);
 
         // Crear vector con fuerte componente horizontal y pequeño vertical
         return new Vector2(horizontalDirection, 0.2f).normalized;

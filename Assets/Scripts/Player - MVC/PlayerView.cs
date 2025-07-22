@@ -26,8 +26,7 @@ public class PlayerView : MonoBehaviour
         model.OnJump += () => { anim.SetBool("Jump", true); jumpSFX.Play(); jumpParticles.Play(); };
         model.OnDoubleJump += () => { anim.SetBool("isDouble", true); doubleJumpSFX.Play(); doubleJumpParticles.Play(); };
         model.OnLand += () => { anim.SetBool("isGround", true); landParticles.Play(); };
-        model.OnDash += () => { anim.SetTrigger("Dash"); dashSFX.Play(); dashParticles.Play(); };
-        model.OnDamage += () => { anim.SetTrigger("Hurt"); hitSFX.Play(); };
+        model.OnDamage += () => { anim.SetBool("Hurt", true); hitSFX.Play(); };
     }
 
     public void HandleMove(Vector2 vel)
@@ -52,8 +51,7 @@ public class PlayerView : MonoBehaviour
         anim.SetBool("isDouble", false);
         anim.SetBool("Fall", false);
         anim.SetBool("isGround", true);
-        anim.ResetTrigger("Dash");
-        anim.ResetTrigger("Hurt");
+        anim.SetBool("Hurt", false);
     }
 
     public void ResetDash() => anim.ResetTrigger("Dash");

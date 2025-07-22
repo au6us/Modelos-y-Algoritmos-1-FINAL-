@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
 public abstract class EnemyBase : MonoBehaviour
 {
     public EnemyBase Prefab { get; set; }
+    public EnemySpawner OriginSpawner { get; set; }
     public event Action<EnemyBase> OnDie;
 
     [SerializeField] protected int pointValue = 100;
@@ -13,12 +14,14 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected Animator anim;
     protected Collider2D col;
+    protected Rigidbody2D enemyRb;
     protected bool isDead = false;
 
     protected virtual void Awake()
     {
         anim = GetComponent<Animator>();
         col = GetComponent<Collider2D>();
+        enemyRb = GetComponent<Rigidbody2D>();
     }
 
     private void Update()
@@ -35,28 +38,45 @@ public abstract class EnemyBase : MonoBehaviour
 
         if (((1 << c.gameObject.layer) & playerLayer) != 0)
         {
+            var player = c.collider.GetComponent<PlayerController>();
+            if (player == null) return;
+
             ContactPoint2D contact = c.GetContact(0);
             Vector2 normal = contact.normal;
 
-            // Si me tocaron de costado (no de arriba)
-            if (Mathf.Abs(normal.y) < 0.5f && Mathf.Abs(normal.x) > 0.5f)
-            {
-                var player = c.collider.GetComponent<PlayerController>();
-                if (player != null)
-                    player.Rebound(normal);
-            }
+            // El jugador viene desde arriba (stomp) → NO hacemos nada
+            if (normal.y > 0.5f) return;
+
+            // Calcular dirección basada en posición relativa
+            Vector2 knockbackDirection = CalculateKnockbackDirection(player.transform.position);
+
+            player.Rebound(knockbackDirection);
+            player.TakeDamage();
         }
     }
 
-    /// <summary>
-    /// Llamado por StompDetector al pisar al enemigo.
-    /// </summary>
+    // Nuevo método para calcular dirección de knockback
+    private Vector2 CalculateKnockbackDirection(Vector2 playerPosition)
+    {
+        // Calcular diferencia de posiciones
+        float relativePositionX = transform.position.x - playerPosition.x;
+
+        // Determinar dirección horizontal (opuesta al jugador)
+        float horizontalDirection = relativePositionX > 0 ? 1 : -1;
+
+        // Crear vector con fuerte componente horizontal y pequeño vertical
+        return new Vector2(horizontalDirection, 0.2f).normalized;
+    }
+
     public void Die()
     {
         if (isDead) return;
         isDead = true;
 
-        // NO SE QUITA EL COLLIDER
+        // Deshabilitar física y colisiones
+        if (col != null) col.enabled = false;
+        if (enemyRb != null) enemyRb.simulated = false;
+
         anim.SetBool("Walk", false);
         anim.SetBool("Die", true);
 
@@ -69,15 +89,34 @@ public abstract class EnemyBase : MonoBehaviour
     private IEnumerator ReturnToPool()
     {
         yield return new WaitForSeconds(deathAnimDuration);
-        isDead = false;
-        anim.SetBool("Die", false);
-        ResetAfterDeath();
+
+        // Notificar al spawner para que respawnee
+        if (OriginSpawner != null)
+        {
+            OriginSpawner.ScheduleRespawn();
+        }
+
+        // Devolver al pool
         PoolManager.Instance.Release(this);
     }
 
-    protected virtual void ResetAfterDeath()
+    public virtual void ResetState()
     {
-        // Nada que hacer si no desactivamos el collider
-        // Pero igual pod�s resetear animaciones ac� si quer�s
+        isDead = false;
+
+        // Resetear animaciones
+        anim.SetBool("Die", false);
+        anim.SetBool("Walk", true);
+
+        // Reactivar componentes
+        if (col != null) col.enabled = true;
+        if (enemyRb != null)
+        {
+            enemyRb.simulated = true;
+            enemyRb.velocity = Vector2.zero;
+            enemyRb.angularVelocity = 0f;
+        }
+
+        gameObject.SetActive(true);
     }
 }

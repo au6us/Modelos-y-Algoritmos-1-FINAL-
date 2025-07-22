@@ -22,8 +22,11 @@ public class PlayerController : MonoBehaviour
 
     private float lastFacing = 1f;
 
+    public static PlayerController Instance { get; private set; }
+
     private void Awake()
     {
+        Instance = this;
         model = GetComponent<PlayerModel>();
         view = GetComponent<PlayerView>();
         rb = GetComponent<Rigidbody2D>();
@@ -90,7 +93,14 @@ public class PlayerController : MonoBehaviour
     public void Rebound(Vector2 direction)
     {
         rb.velocity = Vector2.zero;
+        // Añadir un pequeño componente vertical al knockback
+        direction.y = 0.2f; // 20% de componente vertical
         rb.AddForce(direction.normalized * reboundPower, ForceMode2D.Impulse);
+    }
+
+    public void TakeDamage()
+    {
+        model.TakeDamage(); // Resta vida + dispara animación Hurt
     }
 
     private void OnDrawGizmosSelected()

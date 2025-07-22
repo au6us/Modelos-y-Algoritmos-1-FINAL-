@@ -1,49 +1,39 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum EnemyType
-{
-    Hongo,
-    Tronco,
-    Murcielago
-}
-
 public class EnemyFactory : MonoBehaviour
 {
-    public static EnemyFactory Instance { get; private set; }
+    [System.Serializable]
+    public class EnemyEntry
+    {
+        public string id;
+        public EnemyBase prefab;
+    }
 
-    public EnemyType[] TiposDeEnemigos;
+    [Header("Lista de enemigos disponibles")]
+    [SerializeField] private List<EnemyEntry> enemies;
 
-    public EnemyBase[] PrefabsDeEnemigos;
-
-    // Diccionario interno para lookup rápido
-    private Dictionary<EnemyType, EnemyBase> map;
+    private Dictionary<string, EnemyBase> enemyDict;
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else { Destroy(gameObject); return; }
-
-        map = new Dictionary<EnemyType, EnemyBase>();
-        int len = Mathf.Min(TiposDeEnemigos.Length, PrefabsDeEnemigos.Length);
-        for (int i = 0; i < len; i++)
+        enemyDict = new Dictionary<string, EnemyBase>();
+        foreach (var entry in enemies)
         {
-            if (PrefabsDeEnemigos[i] != null)
-                map[TiposDeEnemigos[i]] = PrefabsDeEnemigos[i];
+            if (!enemyDict.ContainsKey(entry.id) && entry.prefab != null)
+                enemyDict.Add(entry.id, entry.prefab);
         }
     }
-    public EnemyBase Create(EnemyType type, Vector3 pos)
-    {
-        if (!map.ContainsKey(type))
-        {
-            Debug.LogError($"EnemyFactory: no existe prefab para tipo {type}");
-            return null;
 
-            //por si da error, no se pq no funca
+    public EnemyBase CreateEnemy(string id, Vector3 position)
+    {
+        if (!enemyDict.TryGetValue(id, out var prefab))
+        {
+            Debug.LogError($"[EnemyFactory] Prefab no encontrado con ID: {id}");
+            return null;
         }
 
-        var prefab = map[type];
-        // El poolsito
-        return PoolManager.Instance.Get(prefab, pos, Quaternion.identity);
+        var enemy = PoolManager.Instance.Get(prefab, position, Quaternion.identity);
+        return enemy;
     }
 }

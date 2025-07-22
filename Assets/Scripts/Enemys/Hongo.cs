@@ -13,25 +13,25 @@ public class Hongo : EnemyBase
     [SerializeField] private Transform groundCheckPoint;
     [SerializeField] private Transform wallCheckPoint;
 
-    private Rigidbody2D rb;
     private SpriteRenderer sr;
 
     protected override void Awake()
     {
         base.Awake();
-        rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
     }
 
     protected override void UpdateBehavior()
     {
-        // raycast suelo y pared
+        if (isDead || enemyRb == null) return;
+
         bool isGroundAhead = Physics2D.Raycast(
             groundCheckPoint.position,
             Vector2.down,
             groundCheckDistance,
             groundLayer
         );
+
         bool isWallAhead = Physics2D.Raycast(
             wallCheckPoint.position,
             Vector2.right * direction,
@@ -40,12 +40,22 @@ public class Hongo : EnemyBase
         );
 
         if (!isGroundAhead || isWallAhead)
+        {
             direction *= -1;
+        }
 
-        rb.velocity = new Vector2(direction * speed, rb.velocity.y);
-
-        // animación patrulla
+        enemyRb.velocity = new Vector2(direction * speed, enemyRb.velocity.y);
         anim.SetBool("Walk", true);
         sr.flipX = direction > 0;
+    }
+
+    public override void ResetState()
+    {
+        base.ResetState();
+        direction = 1;
+        if (sr != null) sr.flipX = false;
+
+        // Resetear posición y rotación
+        transform.rotation = Quaternion.identity;
     }
 }

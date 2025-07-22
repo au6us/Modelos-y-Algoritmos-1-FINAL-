@@ -4,16 +4,29 @@ using UnityEngine;
 public class PoolManager : MonoBehaviour
 {
     public static PoolManager Instance { get; private set; }
-    private class Pool { public Queue<EnemyBase> queue = new(); public EnemyBase prefab; public Pool(EnemyBase p) { prefab = p; } }
-    private Dictionary<EnemyBase, Pool> pools = new();
+
+    private class Pool
+    {
+        public Queue<EnemyBase> queue = new Queue<EnemyBase>();
+        public EnemyBase prefab;
+        public Pool(EnemyBase p) { prefab = p; }
+    }
+
+    private Dictionary<EnemyBase, Pool> pools = new Dictionary<EnemyBase, Pool>();
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else { Destroy(gameObject); return; }
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
-
-
 
     public EnemyBase Get(EnemyBase prefab, Vector3 pos, Quaternion rot)
     {
@@ -23,25 +36,43 @@ public class PoolManager : MonoBehaviour
             pools[prefab] = pool;
         }
 
-        EnemyBase inst;
+        EnemyBase instance;
         if (pool.queue.Count > 0)
         {
-            inst = pool.queue.Dequeue();
-            inst.gameObject.SetActive(true);
-            inst.transform.SetPositionAndRotation(pos, rot);
+            instance = pool.queue.Dequeue();
+            instance.transform.SetPositionAndRotation(pos, rot);
+            instance.gameObject.SetActive(true);
+            instance.ResetState();
         }
-        else inst = Instantiate(prefab, pos, rot);
+        else
+        {
+            instance = Instantiate(prefab, pos, rot);
+            instance.Prefab = prefab;
+            instance.gameObject.SetActive(true);
+        }
 
-        // Reactivar todos los colliders
-        foreach (var c in inst.GetComponentsInChildren<Collider2D>(true))
-            c.enabled = true;
-
-        return inst;
+        Debug.Log($"Get from pool: {instance.name}");
+        return instance;
     }
 
-    public void Release(EnemyBase inst)
+    public void Release(EnemyBase instance)
     {
-        inst.gameObject.SetActive(false);
-        pools[inst.Prefab].queue.Enqueue(inst);
+        if (instance == null || instance.gameObject == null) return;
+
+        Debug.Log($"Release to pool: {instance.name}");
+
+        // Desactivar y mover fuera de vista
+        instance.gameObject.SetActive(false);
+        instance.transform.position = new Vector3(1000, 1000, 0);
+
+        if (instance.Prefab != null && pools.ContainsKey(instance.Prefab))
+        {
+            pools[instance.Prefab].queue.Enqueue(instance);
+        }
+        else
+        {
+            Debug.LogWarning($"PoolManager: No pool found for {instance.GetType().Name}");
+            Destroy(instance.gameObject);
+        }
     }
 }

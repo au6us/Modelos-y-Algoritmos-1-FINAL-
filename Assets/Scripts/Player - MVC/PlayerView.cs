@@ -26,7 +26,20 @@ public class PlayerView : MonoBehaviour
         model.OnJump += () => { anim.SetBool("Jump", true); jumpSFX.Play(); jumpParticles.Play(); };
         model.OnDoubleJump += () => { anim.SetBool("isDouble", true); doubleJumpSFX.Play(); doubleJumpParticles.Play(); };
         model.OnLand += () => { anim.SetBool("isGround", true); landParticles.Play(); };
-        model.OnDamage += () => { anim.SetBool("Hurt", true); hitSFX.Play(); };
+        model.OnDamage += () => { anim.SetTrigger("Hurt"); hitSFX.Play(); };
+        model.OnDeath += HandleDeath;
+    }
+
+    private void OnDisable()
+    {
+        model.OnDeath -= HandleDeath;
+    }
+
+    private void HandleDeath()
+    {
+        anim.SetTrigger("Die");
+        // Aquí puedes agregar lógica adicional de muerte
+        Debug.Log("Player has died!");
     }
 
     public void HandleMove(Vector2 vel)
@@ -38,9 +51,6 @@ public class PlayerView : MonoBehaviour
         bool grounded = anim.GetBool("isGround");
         if (moving && grounded && !footstepSFX.isPlaying) footstepSFX.Play();
         else if ((!moving || !grounded) && footstepSFX.isPlaying) footstepSFX.Stop();
-
-        anim.SetBool("Hurt", false);
-
     }
 
     public void SetJump(bool j) => anim.SetBool("Jump", j);
@@ -54,7 +64,8 @@ public class PlayerView : MonoBehaviour
         anim.SetBool("isDouble", false);
         anim.SetBool("Fall", false);
         anim.SetBool("isGround", true);
-        anim.SetBool("Hurt", false);
+        anim.ResetTrigger("Dash");
+        anim.ResetTrigger("Hurt");
     }
 
     public void ResetDash() => anim.ResetTrigger("Dash");

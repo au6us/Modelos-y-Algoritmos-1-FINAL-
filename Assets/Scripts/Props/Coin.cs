@@ -2,12 +2,14 @@ using UnityEngine;
 
 public class Coin : CollectibleBase
 {
-    [Header("Coin Specific")]
-    [Tooltip("Puntos que otorga esta moneda")]
-    [SerializeField] private int coinPoints = 5;
+    protected override CollectibleType GetCollectibleType() => CollectibleType.Coin;
 
+    // Opcional: puedes sobreescribir para comportamiento adicional
     protected override void OnCollected()
     {
-        GameEventManager.CoinCollected(coinPoints);
+        base.OnCollected(); // Llama a la implementación base que dispara el evento
+
+        // Comportamiento adicional específico de monedas
+        Debug.Log("Moneda recolectada!");
     }
 }

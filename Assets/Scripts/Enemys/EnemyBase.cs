@@ -4,20 +4,20 @@ using UnityEngine;
 
 public abstract class EnemyBase : MonoBehaviour
 {
-    public EnemyBase Prefab { get; set; }
-    public EnemySpawner OriginSpawner { get; set; }
-    public event Action<EnemyBase> OnDie;
-
+    [Header("Combat Settings")]
+    [SerializeField] protected int damage = 1;
     [SerializeField] protected int pointValue = 100;
     [SerializeField] protected LayerMask playerLayer;
     [SerializeField] protected float deathAnimDuration = 0.5f;
+
+    public EnemyBase Prefab { get; set; }
+    public EnemySpawner OriginSpawner { get; set; }
+    public event Action<EnemyBase> OnDie;
 
     protected Animator anim;
     protected Collider2D col;
     protected Rigidbody2D enemyRb;
     protected bool isDead = false;
-
-
 
     protected virtual void Awake()
     {
@@ -28,8 +28,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     private void Update()
     {
-        if (!isDead)
-            UpdateBehavior();
+        if (!isDead) UpdateBehavior();
     }
 
     protected abstract void UpdateBehavior();
@@ -53,17 +52,17 @@ public abstract class EnemyBase : MonoBehaviour
             Vector2 knockbackDirection = CalculateKnockbackDirection(player.transform.position);
 
             player.Rebound(knockbackDirection);
-            player.TakeDamage();
+            player.TakeDamage(damage);
         }
     }
 
-    // Nuevo método para calcular dirección de knockback
+    // Método para calcular dirección de knockback
     private Vector2 CalculateKnockbackDirection(Vector2 playerPosition)
     {
-        // Calcular diferencia de posiciones
+        // Calcular diferencia de posiciones: jugador.x - enemigo.x
         float relativePositionX = playerPosition.x - transform.position.x;
 
-        // Determinar dirección horizontal (misma dirección que el punto de contacto)
+        // Determinar dirección horizontal (misma dirección del contacto)
         float horizontalDirection = Mathf.Sign(relativePositionX);
 
         // Crear vector con fuerte componente horizontal y pequeño vertical
@@ -83,7 +82,7 @@ public abstract class EnemyBase : MonoBehaviour
         anim.SetBool("Die", true);
 
         OnDie?.Invoke(this);
-        GameEventManager.EnemyKilled(pointValue);
+        GameEventManager.TriggerCollectibleEvent(CollectibleType.EnemyKilled, pointValue, transform.position);
 
         StartCoroutine(ReturnToPool());
     }
@@ -105,8 +104,6 @@ public abstract class EnemyBase : MonoBehaviour
     public virtual void ResetState()
     {
         isDead = false;
-
-        // Resetear animaciones
         anim.SetBool("Die", false);
         anim.SetBool("Walk", true);
 

@@ -43,10 +43,7 @@ public class PlayerController : MonoBehaviour
             // Bloquear entrada durante knockback
             moveInput = Vector2.zero;
             knockbackTimer -= Time.deltaTime;
-            if (knockbackTimer <= 0)
-            {
-                isKnockback = false;
-            }
+            if (knockbackTimer <= 0) isKnockback = false;
             return;
         }
 
@@ -85,8 +82,7 @@ public class PlayerController : MonoBehaviour
         float h = (Input.GetKey(KeyCode.D) ? 1f : 0f) + (Input.GetKey(KeyCode.A) ? -1f : 0f);
         moveInput = new Vector2(h, 0f);
 
-        if (h != 0f)
-            lastFacing = Mathf.Sign(h);
+        if (h != 0f) lastFacing = Mathf.Sign(h);
 
         if (Input.GetKeyDown(KeyCode.W) && model.UseJump())
             rb.velocity = new Vector2(rb.velocity.x, model.JumpForce);
@@ -138,9 +134,9 @@ public class PlayerController : MonoBehaviour
         isKnockback = false;
     }
 
-    public void TakeDamage()
+    public void TakeDamage(int damageAmount)
     {
-        model.TakeDamage();
+        model.TakeDamage(damageAmount);
     }
 
     private void OnDrawGizmosSelected()

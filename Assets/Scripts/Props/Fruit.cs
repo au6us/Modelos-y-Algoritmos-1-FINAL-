@@ -1,31 +1,19 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-public class Fruit : MonoBehaviour
+public class Fruit : CollectibleBase
 {
     [Header("Fruit Settings")]
-    [SerializeField] private int fruitPoints = 20;
     [SerializeField] private int healAmount = 1;
-    [SerializeField] private AudioSource collectSFX;
-    [SerializeField] private ParticleSystem collectVFX;
+    protected override CollectibleType GetCollectibleType() => CollectibleType.Fruit;
 
-    private void OnTriggerEnter2D(Collider2D other)
+    protected override void OnCollected()
     {
-        if (!other.CompareTag("Player")) return;
+        base.OnCollected(); // Evento de colección (puntos)
 
-        // Feedback
-        collectSFX?.Play();
-        if (collectVFX != null)
-            Instantiate(collectVFX, transform.position, Quaternion.identity);
-
-        // Eventos
-        GameEventManager.FruitCollected(fruitPoints);
-
-        // Curar al jugador
-        var playerModel = other.GetComponent<PlayerModel>();
+        // Cura al player
+        var playerModel = PlayerController.Instance?.GetComponent<PlayerModel>();
         if (playerModel != null)
             playerModel.Heal(healAmount);
-
-        Destroy(gameObject);
     }
 }

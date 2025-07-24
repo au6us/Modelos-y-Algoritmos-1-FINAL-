@@ -40,9 +40,7 @@ public class Hongo : EnemyBase
         );
 
         if (!isGroundAhead || isWallAhead)
-        {
             direction *= -1;
-        }
 
         enemyRb.velocity = new Vector2(direction * speed, enemyRb.velocity.y);
         anim.SetBool("Walk", true);

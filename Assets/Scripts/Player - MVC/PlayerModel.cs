@@ -4,17 +4,22 @@ using UnityEngine;
 
 public class PlayerModel : MonoBehaviour
 {
+    [Header("Movement Settings")]
     public float MoveSpeed = 5f;
     public float JumpForce = 7f;
     public int MaxJumps = 2;
     public float DashSpeed = 12f;
     public float DashDuration = 0.2f;
     public float DashCooldown = 1f;
-    public int MaxLife = 3;
+
+    [Header("Health Settings")]
+    [SerializeField] private int maxLife = 10;
+    [SerializeField] private int currentLife = 10;
 
     public int JumpsLeft { get; private set; }
     public bool CanDash { get; private set; } = true;
-    public int Life { get; private set; }
+    public int Life => currentLife;
+    public int MaxLife => maxLife;
 
     public event Action OnJump;
     public event Action OnDoubleJump;
@@ -22,11 +27,13 @@ public class PlayerModel : MonoBehaviour
     public event Action OnLand;
     public event Action OnDash;
     public event Action OnDamage;
+    public event Action OnDeath;
+    public event Action<int> OnLifeChanged;
 
     private void Awake()
     {
         JumpsLeft = MaxJumps;
-        Life = MaxLife;
+        currentLife = maxLife;
     }
 
     public bool UseJump()
@@ -60,18 +67,22 @@ public class PlayerModel : MonoBehaviour
         CanDash = true;
     }
 
-    public void TakeDamage()
+    public void TakeDamage(int damageAmount)
     {
-        Life--;
+        currentLife = Mathf.Max(currentLife - damageAmount, 0);
         OnDamage?.Invoke();
+        OnLifeChanged?.Invoke(currentLife);
+
+        if (currentLife <= 0)
+        {
+            OnDeath?.Invoke();
+        }
     }
 
-    /// <summary>
-    /// Cura al jugador, respetando el máximo de vida.
-    /// </summary>
     public void Heal(int amount)
     {
-        Life = Mathf.Min(Life + amount, MaxLife);
-        // Aquí podrías emitir un OnHeal si lo necesitas
+        int newLife = Mathf.Min(currentLife + amount, maxLife);
+        currentLife = newLife;
+        OnLifeChanged?.Invoke(newLife);
     }
 }

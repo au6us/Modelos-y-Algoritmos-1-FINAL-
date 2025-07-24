@@ -5484,7 +5484,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Manzana
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 953922588687949550, guid: 0b0fd998d0f84bf45b36f0f8d1765d45, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

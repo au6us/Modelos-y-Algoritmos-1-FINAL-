@@ -42,11 +42,12 @@ public class EnemyBullet : MonoBehaviour
         {
             if (c.collider.TryGetComponent<PlayerController>(out var player))
             {
-                // rebote y daño
-                Vector2 normal = c.GetContact(0).normal;
-                player.Rebound(normal);
+                // rebote y daño usando la dirección del disparo
+                // así nunca inviertes el vector
+                player.Rebound(direction);
                 player.TakeDamage();
             }
+
             DestroySelf();
             return;
         }

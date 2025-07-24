@@ -10,8 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7095280315356665781}
   - component: {fileID: 1199198220200965742}
-  - component: {fileID: 8047840465878317978}
   - component: {fileID: 8390735215907447734}
+  - component: {fileID: -6206284586351004053}
+  - component: {fileID: -8384898714396977931}
   m_Layer: 8
   m_Name: BulletTronco
   m_TagString: Untagged
@@ -86,21 +87,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8047840465878317978
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 154978972066390051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90947d3c0442cbd43ad842c54de160d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 6
-  timeLife: 3
-  damage: 1
 --- !u!70 &8390735215907447734
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -133,6 +119,52 @@ CapsuleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.058867887, y: -0.049356624}
-  m_Size: {x: 1.1377378, y: 0.72709745}
+  m_Offset: {x: -0.04972418, y: -0.049356613}
+  m_Size: {x: 1.1270655, y: 0.7271071}
   m_Direction: 1
+--- !u!50 &-6206284586351004053
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 154978972066390051}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 2
+--- !u!114 &-8384898714396977931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 154978972066390051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 788e022f7a244464ab875fe7c603d445, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 10
+  lifetime: 5
+  damage: 1
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 0
+  direction: {x: 1, y: 0}

@@ -252,7 +252,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07568451f861596459e7134da20ecb19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fruitPoints: 20
-  healAmount: 1
+  pointValue: 1
   collectSFX: {fileID: 6125102674571717209}
   collectVFX: {fileID: 0}
+  healAmount: 2

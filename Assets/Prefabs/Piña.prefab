@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 5276157255991539537}
   - component: {fileID: 7173811689167407453}
   - component: {fileID: 108170552985266830}
-  - component: {fileID: 7213765716405737328}
   - component: {fileID: 6852874104095124162}
   - component: {fileID: 5908777795619809611}
+  - component: {fileID: -1488706163822546711}
   m_Layer: 0
   m_Name: "Pi\xF1a"
   m_TagString: Untagged
@@ -109,24 +109,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7213765716405737328
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 618234968167189340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f74d1934da00ee145b1f158d9f029843, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  efecto: {fileID: 3567936551083611455, guid: 6edbbdd1115e2d5439c73e98858f922e, type: 3}
-  cantidadPuntos: 30
-  puntaje: {fileID: 0}
-  eatSound: {fileID: 5908777795619809611}
-  curacion: 2
-  floatingTextPrefab: {fileID: 205888279292352923, guid: b58aad2b5f7956c40b93e77c38ce2c00, type: 3}
 --- !u!70 &6852874104095124162
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -258,3 +240,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &-1488706163822546711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 618234968167189340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07568451f861596459e7134da20ecb19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pointValue: 1
+  collectSFX: {fileID: 5908777795619809611}
+  collectVFX: {fileID: 0}
+  healAmount: 3

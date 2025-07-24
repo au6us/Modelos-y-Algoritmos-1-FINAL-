@@ -1,26 +1,27 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
+[RequireComponent(typeof(Rigidbody2D), typeof(Collider2D), typeof(SpriteRenderer))]
 public class EnemyBullet : MonoBehaviour
 {
     [Header("Configuración")]
     [SerializeField] private float speed = 10f;
     [SerializeField] private float lifetime = 5f;
     [SerializeField] private int damage = 1;
-    [SerializeField] private LayerMask hitMask;      // capar jugador + suelos, muros, etc.
-    [SerializeField] private Vector2 direction = Vector2.right;
+    [SerializeField] private LayerMask hitMask;       // capa del player u otros obstáculos
 
+    private Vector2 direction;
     private Rigidbody2D rb;
+    private SpriteRenderer sr;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        // Asegurate que el collider NO es trigger
+        sr = GetComponent<SpriteRenderer>();
+        // Asegúrate de que el collider NO sea trigger
     }
 
     private void OnEnable()
     {
-        // Destruir si no golpea nada tras un tiempo
         Invoke(nameof(DestroySelf), lifetime);
     }
 
@@ -31,17 +32,17 @@ public class EnemyBullet : MonoBehaviour
 
     private void Start()
     {
-        rb.velocity = direction.normalized * speed;
+        rb.velocity = direction * speed;
     }
 
     private void OnCollisionEnter2D(Collision2D c)
     {
-        // ¿fue el Player?
+        // Si colisiona con algo de hitMask (por ejemplo el jugador)
         if (((1 << c.gameObject.layer) & hitMask) != 0)
         {
             if (c.collider.TryGetComponent<PlayerController>(out var player))
             {
-                // knockback sencillo hacia atrás
+                // rebote y daño
                 Vector2 normal = c.GetContact(0).normal;
                 player.Rebound(normal);
                 player.TakeDamage();
@@ -50,23 +51,26 @@ public class EnemyBullet : MonoBehaviour
             return;
         }
 
-        // opcional: destruir contra muros/objetos
+        // destruir contra muros o cualquier otro choque
         DestroySelf();
     }
 
     private void DestroySelf()
     {
-        gameObject.SetActive(false);
-        // o bien Destroy(gameObject);
+        // si quisieras usar pooling, desactiva en lugar de destroy
+        Destroy(gameObject);
     }
 
     /// <summary>
-    /// Llamar desde el Tronco justo después de Instantiate:
-    /// bullet.SetDirection(transform.right);
+    /// Llama a este método para definir la dirección y voltear el sprite.
     /// </summary>
     public void SetDirection(Vector2 dir)
     {
-        direction = dir;
-        rb.velocity = direction.normalized * speed;
+        direction = dir.normalized;
+        // FlipX si va hacia la izquierda
+        sr.flipX = direction.x > 0f;
+        // y aplica la velocidad
+        if (rb != null)
+            rb.velocity = direction * speed;
     }
 }

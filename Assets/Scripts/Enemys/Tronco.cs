@@ -11,47 +11,52 @@ public class Tronco : EnemyBase
 
     private float lastShoot;
     private Animator animator;
+    private SpriteRenderer sr;
 
     protected override void Awake()
     {
         base.Awake();
         animator = GetComponent<Animator>();
+        sr = GetComponent<SpriteRenderer>();
     }
 
     protected override void UpdateBehavior()
     {
-        // 1) comprueba si el jugador está en rango a la izquierda o derecha
+        // 0) Voltear el sprite para mirar SIEMPRE al jugador
+        if (PlayerController.Instance != null)
+        {
+            bool playerIsRight =
+                PlayerController.Instance.transform.position.x < transform.position.x;
+            // Ajusta según tu sprite: si tu sprite original mira a la derecha sin flip,
+            // entonces flipX = !playerIsRight; si mira a la izquierda, usa flipX = playerIsRight;
+            sr.flipX = !playerIsRight;
+        }
+
+        // 1) comprobamos rango del player
         bool inRange =
             Physics2D.Raycast(shootController.position, transform.right, distance, playerMask) ||
             Physics2D.Raycast(shootController.position, -transform.right, distance, playerMask);
 
-        // 2) si está en rango y ya pasó el cooldown → dispara
+        // 2) disparar si toca
         if (inRange && Time.time > lastShoot + cooldown)
         {
             lastShoot = Time.time;
             animator.SetTrigger("Disparar");
-            // **NO** instancies la bala aquí; la instanciamos en SpawnBullet()  
-            //  para que coincida con el fotograma exacto de tu animación
+            // la bala se genera en el Animation Event con SpawnBullet()
         }
     }
 
-    /// <summary>
-    /// Este método se llamará desde un Animation Event
-    /// justo en el fotograma en que quieras que salga la bala.
-    /// </summary>
     public void SpawnBullet()
     {
-        // 3) Instanciamos la bala y configuramos su dirección
         var go = Instantiate(bulletPrefab, shootController.position, transform.rotation);
         var bullet = go.GetComponent<EnemyBullet>();
         if (bullet != null)
         {
-            // Decide si la bala sale a la derecha o a la izquierda
-            Vector2 dir = (PlayerController.Instance.transform.position.x > transform.position.x)
-                          ? Vector2.right
-                          : Vector2.left;
+            // determinamos dirección apuntando al player
+            bool playerIsRight =
+                PlayerController.Instance.transform.position.x > transform.position.x;
+            Vector2 dir = playerIsRight ? Vector2.right : Vector2.left;
             bullet.SetDirection(dir);
-            // bullet.hitMask = 1 << LayerMask.NameToLayer("Player"); // opcional
         }
     }
 }

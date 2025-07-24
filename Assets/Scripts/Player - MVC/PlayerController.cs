@@ -99,7 +99,6 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(model.DashDuration);
         rb.gravityScale = originalGravity;
         isDashing = false;
-        view.ResetDash();
     }
 
     public void Rebound(Vector2 direction)
@@ -110,7 +109,6 @@ public class PlayerController : MonoBehaviour
             StopAllCoroutines();
             rb.gravityScale = originalGravity;
             isDashing = false;
-            view.ResetDash();
         }
 
         // Aplicar knockback

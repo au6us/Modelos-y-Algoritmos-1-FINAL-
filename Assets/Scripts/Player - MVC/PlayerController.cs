@@ -1,5 +1,6 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(PlayerModel), typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
@@ -9,7 +10,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
 
-    [Header("Rebound")]
+    [Header("Rebound Settings")]
     [SerializeField] private float reboundPower = 20f;
     [SerializeField] private float knockbackDuration = 0.3f;
 
@@ -25,6 +26,9 @@ public class PlayerController : MonoBehaviour
     private float lastFacing = 1f;
     private float originalGravity;
 
+    // Memento
+    private IMemento lastCheckpoint;
+
     public static PlayerController Instance { get; private set; }
 
     private void Awake()
@@ -36,14 +40,52 @@ public class PlayerController : MonoBehaviour
         originalGravity = rb.gravityScale;
     }
 
+    private void OnEnable()
+    {
+        model.OnDeath += OnPlayerDeath;
+    }
+
+    private void OnDisable()
+    {
+        model.OnDeath -= OnPlayerDeath;
+    }
+
+    private void OnPlayerDeath()
+    {
+        if (lastCheckpoint == null)
+        {
+            // Sin checkpoint: recarga la escena
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        else
+        {
+            // Restaurar estado guardado
+            var m = (PlayerMemento)lastCheckpoint;
+            transform.position = m.Position;
+            int delta = m.SavedLife - model.Life;
+            if (delta > 0) model.Heal(delta);
+            rb.velocity = Vector2.zero;
+            isDashing = isKnockback = false;
+            rb.gravityScale = originalGravity;
+            view.ResetStatesOnLand();
+        }
+    }
+
+    /// <summary>
+    /// Llamado por el checkpoint para registrar el estado.
+    /// </summary>
+    public void SetCheckpoint(IMemento memento)
+    {
+        lastCheckpoint = memento;
+    }
+
     private void Update()
     {
         if (isKnockback)
         {
-            // Bloquear entrada durante knockback
             moveInput = Vector2.zero;
             knockbackTimer -= Time.deltaTime;
-            if (knockbackTimer <= 0) isKnockback = false;
+            if (knockbackTimer <= 0f) isKnockback = false;
             return;
         }
 
@@ -62,7 +104,6 @@ public class PlayerController : MonoBehaviour
             view.ResetStatesOnLand();
         }
 
-        // Solo aplicar movimiento si no est· en dash o knockback
         if (!isDashing && !isKnockback)
         {
             rb.velocity = new Vector2(moveInput.x * model.MoveSpeed, rb.velocity.y);
@@ -79,9 +120,10 @@ public class PlayerController : MonoBehaviour
 
     private void ProcessInput()
     {
-        float h = (Input.GetKey(KeyCode.D) ? 1f : 0f) + (Input.GetKey(KeyCode.A) ? -1f : 0f);
-        moveInput = new Vector2(h, 0f);
+        float h = (Input.GetKey(KeyCode.D) ? 1f : 0f)
+                + (Input.GetKey(KeyCode.A) ? -1f : 0f);
 
+        moveInput = new Vector2(h, 0f);
         if (h != 0f) lastFacing = Mathf.Sign(h);
 
         if (Input.GetKeyDown(KeyCode.W) && model.UseJump())
@@ -91,11 +133,11 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(DashRoutine(lastFacing));
     }
 
-    private IEnumerator DashRoutine(float direction)
+    private IEnumerator DashRoutine(float dir)
     {
         isDashing = true;
         rb.gravityScale = 0f;
-        rb.velocity = new Vector2(direction * model.DashSpeed, 0f);
+        rb.velocity = new Vector2(dir * model.DashSpeed, 0f);
         yield return new WaitForSeconds(model.DashDuration);
         rb.gravityScale = originalGravity;
         isDashing = false;
@@ -103,35 +145,29 @@ public class PlayerController : MonoBehaviour
 
     public void Rebound(Vector2 direction)
     {
-        // Cancelar dash si est· activo
         if (isDashing)
         {
             StopAllCoroutines();
             rb.gravityScale = originalGravity;
             isDashing = false;
         }
-
-        // Aplicar knockback
         StartCoroutine(ApplyKnockback(direction));
     }
 
-    private IEnumerator ApplyKnockback(Vector2 direction)
+    private IEnumerator ApplyKnockback(Vector2 dir)
     {
         isKnockback = true;
         knockbackTimer = knockbackDuration;
-
-        // Resetear velocidad y aplicar fuerza
         rb.velocity = Vector2.zero;
-        rb.AddForce(direction.normalized * reboundPower, ForceMode2D.Impulse);
-
-        // Bloquear entrada durante el knockback
+        rb.AddForce(dir.normalized * reboundPower, ForceMode2D.Impulse);
         moveInput = Vector2.zero;
-
-        // Esperar a que termine el knockback
         yield return new WaitForSeconds(knockbackDuration);
         isKnockback = false;
     }
 
+    /// <summary>
+    /// Firma original de tu proyecto: mantiene intacta la l√≥gica de da√±o.
+    /// </summary>
     public void TakeDamage(int damageAmount)
     {
         model.TakeDamage(damageAmount);

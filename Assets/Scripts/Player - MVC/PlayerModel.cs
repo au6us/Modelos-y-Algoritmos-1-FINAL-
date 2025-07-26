@@ -74,15 +74,20 @@ public class PlayerModel : MonoBehaviour
         OnLifeChanged?.Invoke(currentLife);
 
         if (currentLife <= 0)
-        {
             OnDeath?.Invoke();
-        }
     }
 
     public void Heal(int amount)
     {
-        int newLife = Mathf.Min(currentLife + amount, maxLife);
-        currentLife = newLife;
-        OnLifeChanged?.Invoke(newLife);
+        currentLife = Mathf.Min(currentLife + amount, maxLife);
+        OnLifeChanged?.Invoke(currentLife);
+    }
+
+    /// <summary>
+    /// Crea un memento con la posición actual y la vida.
+    /// </summary>
+    public PlayerMemento SaveState(Vector3 pos)
+    {
+        return new PlayerMemento(pos, currentLife);
     }
 }

@@ -71,7 +71,7 @@ public class PoolManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"PoolManager: No pool found for {instance.GetType().Name}");
+            Debug.LogWarning($"PoolManager: No se encontró pool para el {instance.GetType().Name}");
             Destroy(instance.gameObject);
         }
     }

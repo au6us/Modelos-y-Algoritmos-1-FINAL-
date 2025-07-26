@@ -27,6 +27,8 @@ public class PlayerView : MonoBehaviour
         model.OnDoubleJump += () => { anim.SetBool("isDouble", true); doubleJumpSFX.Play(); doubleJumpParticles.Play(); };
         model.OnLand += () => { anim.SetBool("isGround", true); landParticles.Play(); };
         model.OnDamage += () => { anim.SetBool("Hurt", true); hitSFX.Play(); };
+        model.OnDash += () => { dashSFX.Play(); dashParticles.Play(); };
+
         model.OnDeath += HandleDeath;
     }
 

@@ -2,11 +2,12 @@ using UnityEngine;
 
 public class Murcielago : EnemyBase
 {
-    [SerializeField] private Transform player;
     [SerializeField] private float speed;
     [SerializeField] private float maxDistance;
+
     private Vector3 startPos;
     private SpriteRenderer sr;
+    private Transform playerTarget; // Referencia dinámica
 
     protected override void Awake()
     {
@@ -17,14 +18,21 @@ public class Murcielago : EnemyBase
 
     protected override void UpdateBehavior()
     {
-        float d = Vector2.Distance(transform.position, player.position);
+        if (playerTarget == null)
+        {
+            FindPlayer();
+            return; // Sale del frame si no encontró jugador
+        }
+
+        float d = Vector2.Distance(transform.position, playerTarget.position);
+
         if (d < maxDistance)
         {
             transform.position = Vector2.MoveTowards(transform.position,
-                                                     player.position,
+                                                     playerTarget.position,
                                                      speed * Time.deltaTime);
             anim.Play("Bat_Fly");
-            sr.flipX = player.position.x < transform.position.x;
+            sr.flipX = playerTarget.position.x > transform.position.x;
         }
         else
         {
@@ -32,7 +40,21 @@ public class Murcielago : EnemyBase
                                                      startPos,
                                                      speed * Time.deltaTime);
             anim.Play("Bat_Idle");
-            sr.flipX = startPos.x < transform.position.x;
+            sr.flipX = startPos.x > transform.position.x;
+        }
+    }
+
+    private void FindPlayer()
+    {
+        Collider2D playerCollider = Physics2D.OverlapCircle(
+            transform.position,
+            maxDistance,
+            playerLayer
+        );
+
+        if (playerCollider != null)
+        {
+            playerTarget = playerCollider.transform;
         }
     }
 }

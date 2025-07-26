@@ -1,42 +1,64 @@
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Collider2D))]
 public abstract class CollectibleBase : MonoBehaviour
 {
     [Header("Collectible Settings")]
-    [Tooltip("Cuántos puntos da al recoger")]
     [SerializeField] protected int pointValue = 1;
 
     [Header("Feedback")]
-    [SerializeField] private AudioSource collectSFX;
-    [SerializeField] private ParticleSystem collectVFX;
+    [SerializeField] protected AudioSource collectSFX;
+    [SerializeField] protected ParticleSystem collectVFX;
+
+    private bool collected = false;
+    private Collider2D col;
+    private SpriteRenderer spriteRenderer;
+
+    protected virtual void Awake()
+    {
+        col = GetComponent<Collider2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
 
     protected abstract CollectibleType GetCollectibleType();
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Player")) return;
+        if (!other.CompareTag("Player") || collected) return;
+        collected = true;
 
-        // Sonido y partículas
-        PlayCollectionFeedback();
+        // Desactivar inmediatamente los componentes visibles/interactivos
+        col.enabled = false;
+        if (spriteRenderer != null) spriteRenderer.enabled = false;
 
-        // Lógica concreta de cada collectible
-        OnCollected();
+        // Ejecutar lógica de recolección (incluyendo actualización de UI)
+        OnCollected(other);
 
-        // Destruir el objeto
+        // Manejar feedback y destrucción
+        StartCoroutine(PlayCollectionFeedback());
+    }
+
+    protected virtual IEnumerator PlayCollectionFeedback()
+    {
+        // Reproducir sonido si existe
+        if (collectSFX != null && collectSFX.clip != null)
+        {
+            collectSFX.Play();
+            yield return new WaitForSeconds(collectSFX.clip.length);
+        }
+        else
+        {
+            yield return null;
+        }
+
+        // Destruir el objeto después del feedback
         Destroy(gameObject);
     }
 
-    protected virtual void PlayCollectionFeedback()
+    protected virtual void OnCollected(Collider2D player)
     {
-        if (collectSFX != null) collectSFX.Play();
-        if (collectVFX != null)
-            Instantiate(collectVFX, transform.position, Quaternion.identity);
-    }
-
-    protected virtual void OnCollected()
-    {
-        // Disparar evento con información completa
+        // Disparar evento inmediatamente para actualizar UI
         GameEventManager.TriggerCollectibleEvent(
             GetCollectibleType(),
             pointValue,

@@ -4,12 +4,10 @@ public class Coin : CollectibleBase
 {
     protected override CollectibleType GetCollectibleType() => CollectibleType.Coin;
 
-    // Opcional: puedes sobreescribir para comportamiento adicional
-    protected override void OnCollected()
+    protected override void OnCollected(Collider2D player)
     {
-        base.OnCollected(); // Llama a la implementación base que dispara el evento
+        base.OnCollected(player); // Pasar el parámetro al método base
 
-        // Comportamiento adicional específico de monedas
         Debug.Log("Moneda recolectada!");
     }
 }

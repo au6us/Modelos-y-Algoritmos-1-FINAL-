@@ -19,11 +19,9 @@ public class UIController : MonoBehaviour
 
     private void Awake()
     {
-        // Suscripciones a eventos
         playerModel.OnLifeChanged += UpdateHealthBar;
         GameEventManager.OnCollectibleEvent += HandleCollectibleEvent;
-        
-        // Inicialización
+
         InitializeUI();
     }
 
@@ -35,15 +33,12 @@ public class UIController : MonoBehaviour
 
     private void InitializeUI()
     {
-        // Vida
         healthSlider.maxValue = playerModel.MaxLife;
         healthSlider.value = playerModel.Life;
-        
-        // Tiempo
+
         startTime = Time.time;
         if (timeBar != null) timeBar.fillAmount = 1f;
-        
-        // Puntaje
+
         currentScore = 0;
         UpdateScoreDisplay();
     }
@@ -72,7 +67,7 @@ public class UIController : MonoBehaviour
     private void UpdateTimeBar()
     {
         if (timeBar == null) return;
-        
+
         float elapsed = Time.time - startTime;
         float fillValue = 1f - (elapsed / maxTime);
         timeBar.fillAmount = Mathf.Clamp01(fillValue);

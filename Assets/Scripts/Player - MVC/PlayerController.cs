@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
     private bool wasGrounded;
     private bool isGrounded;
     private bool isKnockback;
+    private bool isRespawning;
     private float knockbackTimer;
     private float lastFacing = 1f;
     private float originalGravity;
@@ -52,9 +53,30 @@ public class PlayerController : MonoBehaviour
 
     private void OnPlayerDeath()
     {
+        if (isRespawning) return;
+        StartCoroutine(DeathAndRespawnRoutine());
+    }
+
+    private IEnumerator DeathAndRespawnRoutine()
+    {
+        isRespawning = true;
+        model.StartRespawn();
+
+        // 1. Iniciar animación de muerte
+        view.StartDeathSequence();
+
+        // 2. Deshabilitar controles y física
+        enabled = false;
+        rb.simulated = false;
+        GetComponent<Collider2D>().enabled = false;
+
+        // 3. Esperar a que termine la animación de muerte
+        yield return new WaitForSeconds(view.DeathAnimDuration);
+        view.EndDeathSequence();
+
+        // 4. Realizar respawn
         if (lastCheckpoint == null)
         {
-            // Sin checkpoint: recarga la escena
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
         else
@@ -67,8 +89,16 @@ public class PlayerController : MonoBehaviour
             rb.velocity = Vector2.zero;
             isDashing = isKnockback = false;
             rb.gravityScale = originalGravity;
+
+            // 5. Reactivar componentes
+            enabled = true;
+            rb.simulated = true;
+            GetComponent<Collider2D>().enabled = true;
             view.ResetStatesOnLand();
         }
+
+        model.EndRespawn();
+        isRespawning = false;
     }
 
     /// <summary>
@@ -81,6 +111,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (isRespawning) return;
+
         if (isKnockback)
         {
             moveInput = Vector2.zero;
@@ -94,6 +126,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (isRespawning) return;
+
         wasGrounded = isGrounded;
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);
         view.SetGrounded(isGrounded);

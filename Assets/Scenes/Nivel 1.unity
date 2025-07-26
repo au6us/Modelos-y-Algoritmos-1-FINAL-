@@ -56432,7 +56432,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 24.88, y: 37.059998, z: -10}
+  m_LocalPosition: {x: 16.56, y: 18.99, z: -10}
   m_LocalScale: {x: 2, y: 1.25, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -59134,7 +59134,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3, y: 3}
+    oldSize: {x: 1, y: 1}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -59204,7 +59204,7 @@ Transform:
   m_GameObject: {fileID: 830042450}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 24.88, y: 35.46, z: 0}
+  m_LocalPosition: {x: 16.56, y: 17.39, z: 0}
   m_LocalScale: {x: 1.6778703, y: 1.6778703, z: 1.6778703}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -59738,6 +59738,8 @@ MonoBehaviour:
   doubleJumpParticles: {fileID: 30815413}
   landParticles: {fileID: 1353501880}
   dashParticles: {fileID: 1678765042}
+  deathAnimDuration: 1
+  spawnAnimDuration: 1
 --- !u!114 &830042464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67334,7 +67336,7 @@ Transform:
   m_GameObject: {fileID: 1298796066}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 27.11834, y: 39.17939, z: -9.943008}
+  m_LocalPosition: {x: 18.79834, y: 21.10939, z: -9.943008}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

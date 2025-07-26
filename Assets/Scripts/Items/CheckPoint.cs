@@ -13,7 +13,6 @@ public class Checkpoint : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        // 1) Animación y sonido
         animatorCheckpoint.SetBool("Checking", true);
         if (!hasPlayedSound)
         {
@@ -21,7 +20,6 @@ public class Checkpoint : MonoBehaviour
             hasPlayedSound = true;
         }
 
-        // 2) Guardamos el estado actual en el checkpoint
         var controller = other.GetComponent<PlayerController>();
         if (controller == null) return;
 
@@ -32,4 +30,3 @@ public class Checkpoint : MonoBehaviour
         controller.SetCheckpoint(memento);
     }
 }
-

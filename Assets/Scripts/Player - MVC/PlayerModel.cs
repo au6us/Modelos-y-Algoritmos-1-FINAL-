@@ -20,6 +20,7 @@ public class PlayerModel : MonoBehaviour
     public bool CanDash { get; private set; } = true;
     public int Life => currentLife;
     public int MaxLife => maxLife;
+    public bool IsRespawning { get; private set; }
 
     public event Action OnJump;
     public event Action OnDoubleJump;
@@ -69,8 +70,19 @@ public class PlayerModel : MonoBehaviour
 
     public void TakeDamage(int damageAmount)
     {
+        if (IsRespawning) return;
+
+        // Solo activar animación de hit si no estamos muriendo
+        bool willDie = (currentLife - damageAmount) <= 0;
+
         currentLife = Mathf.Max(currentLife - damageAmount, 0);
-        OnDamage?.Invoke();
+
+        // Si vamos a morir, no activamos la animación de hit
+        if (!willDie)
+        {
+            OnDamage?.Invoke();
+        }
+
         OnLifeChanged?.Invoke(currentLife);
 
         if (currentLife <= 0)
@@ -89,5 +101,15 @@ public class PlayerModel : MonoBehaviour
     public PlayerMemento SaveState(Vector3 pos)
     {
         return new PlayerMemento(pos, currentLife);
+    }
+
+    public void StartRespawn()
+    {
+        IsRespawning = true;
+    }
+
+    public void EndRespawn()
+    {
+        IsRespawning = false;
     }
 }

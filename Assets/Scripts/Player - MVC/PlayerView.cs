@@ -7,10 +7,13 @@ public class PlayerView : MonoBehaviour
     [SerializeField] private PlayerModel model;
 
     [Header("Audio Sources")]
-    [SerializeField] private AudioSource jumpSFX, doubleJumpSFX, hitSFX, dashSFX, footstepSFX;
+    [SerializeField] private AudioSource jumpSFX, doubleJumpSFX, hitSFX, dashSFX, footstepSFX, deathSFX;
 
     [Header("Particle Systems")]
-    [SerializeField] private ParticleSystem jumpParticles, doubleJumpParticles, landParticles, dashParticles;
+    [SerializeField] private ParticleSystem jumpParticles, doubleJumpParticles, landParticles, dashParticles, deathParticles;
+
+    [Header("Animation Settings")]
+    [SerializeField] private float deathAnimDuration = 1f;
 
     private SpriteRenderer sr;
     private Animator anim;
@@ -28,20 +31,29 @@ public class PlayerView : MonoBehaviour
         model.OnLand += () => { anim.SetBool("isGround", true); landParticles.Play(); };
         model.OnDamage += () => { anim.SetBool("Hurt", true); hitSFX.Play(); };
         model.OnDash += () => { dashSFX.Play(); dashParticles.Play(); };
-
-        model.OnDeath += HandleDeath;
+        model.OnDeath += StartDeathSequence;
     }
 
     private void OnDisable()
     {
-        model.OnDeath -= HandleDeath;
+        model.OnDeath -= StartDeathSequence;
     }
 
-    private void HandleDeath()
+    public void StartDeathSequence()
     {
-        anim.SetTrigger("Die"); // Hacer la animacion de muerteeee
+        // Desactivar animación de hit y activar muerte
+        anim.SetBool("Hurt", false);
+        anim.SetBool("PlayerDeath", true);
+
         Debug.Log("Player estiró la pata");
     }
+
+    public void EndDeathSequence()
+    {
+        anim.SetBool("PlayerDeath", false);
+    }
+
+    public float DeathAnimDuration => deathAnimDuration;
 
     public void HandleMove(Vector2 vel)
     {
@@ -54,7 +66,6 @@ public class PlayerView : MonoBehaviour
         else if ((!moving || !grounded) && footstepSFX.isPlaying) footstepSFX.Stop();
 
         anim.SetBool("Hurt", false);
-
     }
 
     public void SetJump(bool j) => anim.SetBool("Jump", j);
@@ -69,5 +80,6 @@ public class PlayerView : MonoBehaviour
         anim.SetBool("Fall", false);
         anim.SetBool("isGround", true);
         anim.SetBool("Hurt", false);
+        anim.SetBool("PlayerDeath", false);
     }
 }

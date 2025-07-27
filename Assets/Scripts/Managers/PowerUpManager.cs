@@ -33,6 +33,7 @@ public class PowerUpManager : MonoBehaviour
         if (Instance == null) Instance = this;
         else { Destroy(gameObject); return; }
 
+        // Inicializar flags y objetos inactivos
         foreach (var e in entries)
         {
             if (e.uiIcon != null) e.uiIcon.SetActive(false);
@@ -51,6 +52,7 @@ public class PowerUpManager : MonoBehaviour
         }
     }
 
+    /// <summary>Equipar al recoger.</summary>
     public void Equip(PowerUpType type)
     {
         var e = entries.Find(x => x.type == type);
@@ -71,12 +73,19 @@ public class PowerUpManager : MonoBehaviour
     {
         e.active = true;
 
+        // Sonido y efecto inmediato
         if (e.activationSource != null) e.activationSource.Play();
         if (e.effectObject != null) e.effectObject.SetActive(true);
 
+        // Esperar duración
         yield return new WaitForSeconds(e.duration);
 
+        // Apagar efecto
         if (e.effectObject != null) e.effectObject.SetActive(false);
+
+        // Consumir el power‑up: ya no está equipado ni activo ni en UI
         e.active = false;
+        e.equipped = false;
+        if (e.uiIcon != null) e.uiIcon.SetActive(false);
     }
 }

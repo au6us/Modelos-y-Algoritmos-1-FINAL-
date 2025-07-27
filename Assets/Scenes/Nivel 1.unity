@@ -59734,12 +59734,13 @@ MonoBehaviour:
   hitSFX: {fileID: 830042462}
   dashSFX: {fileID: 830042458}
   footstepSFX: {fileID: 830042461}
+  deathSFX: {fileID: 0}
   jumpParticles: {fileID: 30815413}
   doubleJumpParticles: {fileID: 30815413}
   landParticles: {fileID: 1353501880}
   dashParticles: {fileID: 1678765042}
+  deathParticles: {fileID: 0}
   deathAnimDuration: 1
-  spawnAnimDuration: 1
 --- !u!114 &830042464
 MonoBehaviour:
   m_ObjectHideFlags: 0

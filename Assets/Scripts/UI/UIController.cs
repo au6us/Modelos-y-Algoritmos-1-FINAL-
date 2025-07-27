@@ -6,7 +6,6 @@ public class UIController : MonoBehaviour
 {
     [Header("Health Settings")]
     [SerializeField] private Slider healthSlider;
-    [SerializeField] private TextMeshProUGUI healthText;
 
     [Header("Score Settings")]
     [SerializeField] private TextMeshProUGUI scoreText;
@@ -16,6 +15,12 @@ public class UIController : MonoBehaviour
     [SerializeField] private Image timeBar;
     [SerializeField] private float maxTime = 90f;
     private float startTime;
+
+    private void Awake()
+    {
+        // Hacer persistente el Canvas entre escenas
+        DontDestroyOnLoad(gameObject);
+    }
 
     private void Start()
     {
@@ -41,16 +46,11 @@ public class UIController : MonoBehaviour
 
     private void HandlePlayerLifeEvent(PlayerLifeEventData lifeData)
     {
-        // Actualizar UI de vida
+        // Actualizar solo la barra de vida
         if (healthSlider != null)
         {
             healthSlider.maxValue = lifeData.MaxLife;
             healthSlider.value = lifeData.CurrentLife;
-        }
-
-        if (healthText != null)
-        {
-            healthText.text = $"{lifeData.CurrentLife}/{lifeData.MaxLife}";
         }
     }
 
@@ -62,7 +62,10 @@ public class UIController : MonoBehaviour
 
     private void UpdateScoreDisplay()
     {
-        scoreText.text = $"{currentScore}";
+        if (scoreText != null)
+        {
+            scoreText.text = $"{currentScore}";
+        }
     }
 
     private void UpdateTimeBar()
@@ -72,5 +75,17 @@ public class UIController : MonoBehaviour
         float elapsed = Time.time - startTime;
         float fillValue = 1f - (elapsed / maxTime);
         timeBar.fillAmount = Mathf.Clamp01(fillValue);
+    }
+
+    // Lógica adicional según tus necesidades
+    public void ResetTimer()
+    {
+        startTime = Time.time;
+    }
+
+    public void AddPoints(int points)
+    {
+        currentScore += points;
+        UpdateScoreDisplay();
     }
 }

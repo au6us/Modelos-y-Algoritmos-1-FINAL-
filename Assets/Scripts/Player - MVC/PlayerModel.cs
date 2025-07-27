@@ -29,12 +29,14 @@ public class PlayerModel : MonoBehaviour
     public event Action OnDash;
     public event Action OnDamage;
     public event Action OnDeath;
-    public event Action<int> OnLifeChanged;
 
     private void Awake()
     {
         JumpsLeft = MaxJumps;
         currentLife = maxLife;
+
+        // Disparar evento de vida inicial
+        GameEventManager.TriggerPlayerLifeEvent(currentLife, maxLife);
     }
 
     public bool UseJump()
@@ -78,7 +80,6 @@ public class PlayerModel : MonoBehaviour
 
         // Disparar evento de vida
         GameEventManager.TriggerPlayerLifeEvent(currentLife, maxLife);
-        OnLifeChanged?.Invoke(currentLife);
 
         if (!willDie)
         {
@@ -97,19 +98,6 @@ public class PlayerModel : MonoBehaviour
         {
             currentLife = newLife;
             GameEventManager.TriggerPlayerLifeEvent(currentLife, maxLife);
-            OnLifeChanged?.Invoke(currentLife);
-        }
-    }
-
-    // Nuevo método para establecer la vida directamente
-    public void SetLife(int newLife)
-    {
-        newLife = Mathf.Clamp(newLife, 0, maxLife);
-        if (newLife != currentLife)
-        {
-            currentLife = newLife;
-            GameEventManager.TriggerPlayerLifeEvent(currentLife, maxLife);
-            OnLifeChanged?.Invoke(currentLife);
         }
     }
 

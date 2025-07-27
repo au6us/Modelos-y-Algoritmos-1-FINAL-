@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
     // Memento
     private IMemento lastCheckpoint;
 
+
     public static PlayerController Instance { get; private set; }
 
     private void Awake()
@@ -87,10 +88,8 @@ public class PlayerController : MonoBehaviour
             // Restaurar estado guardado
             var m = (PlayerMemento)lastCheckpoint;
             transform.position = m.Position;
-
-            // CORRECCIÓN CRÍTICA: Usar SetLife en lugar de Heal
-            model.SetLife(m.SavedLife);
-
+            int delta = m.SavedLife - model.Life;
+            if (delta > 0) model.Heal(delta);
             rb.velocity = Vector2.zero;
             isDashing = isKnockback = false;
             rb.gravityScale = originalGravity;
@@ -101,7 +100,7 @@ public class PlayerController : MonoBehaviour
             GetComponent<Collider2D>().enabled = true;
             view.ResetStatesOnLand();
 
-            // 7. Forzar actualización de vida
+            // 7. Actualizar UI de vida (SOLUCIÓN FINAL)
             GameEventManager.TriggerPlayerLifeEvent(model.Life, model.MaxLife);
         }
 
@@ -181,6 +180,7 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = originalGravity;
         isDashing = false;
     }
+
 
     public void Rebound(Vector2 direction)
     {

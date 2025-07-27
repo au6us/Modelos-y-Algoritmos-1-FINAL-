@@ -28,20 +28,16 @@ public abstract class CollectibleBase : MonoBehaviour
         if (!other.CompareTag("Player") || collected) return;
         collected = true;
 
-        // Desactivar inmediatamente los componentes visibles/interactivos
         col.enabled = false;
         if (spriteRenderer != null) spriteRenderer.enabled = false;
 
-        // Ejecutar lógica de recolección (incluyendo actualización de UI)
         OnCollected(other);
 
-        // Manejar feedback y destrucción
         StartCoroutine(PlayCollectionFeedback());
     }
 
     protected virtual IEnumerator PlayCollectionFeedback()
     {
-        // Reproducir sonido si existe
         if (collectSFX != null && collectSFX.clip != null)
         {
             collectSFX.Play();
@@ -52,13 +48,11 @@ public abstract class CollectibleBase : MonoBehaviour
             yield return null;
         }
 
-        // Destruir el objeto después del feedback
         Destroy(gameObject);
     }
 
     protected virtual void OnCollected(Collider2D player)
     {
-        // Disparar evento inmediatamente para actualizar UI
         GameEventManager.TriggerCollectibleEvent(
             GetCollectibleType(),
             pointValue,

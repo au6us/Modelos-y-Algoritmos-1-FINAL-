@@ -71,10 +71,13 @@ public class PlayerController : MonoBehaviour
         GetComponent<Collider2D>().enabled = false;
 
         // 3. Esperar a que termine la animación de muerte
-        yield return new WaitForSeconds(view.DeathAnimDuration);
+        float deathDuration = view.GetDeathAnimationLength();
+        yield return new WaitForSeconds(deathDuration);
+
+        // 4. Finalizar animación de muerte
         view.EndDeathSequence();
 
-        // 4. Realizar respawn
+        // 5. Realizar respawn
         if (lastCheckpoint == null)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -84,26 +87,28 @@ public class PlayerController : MonoBehaviour
             // Restaurar estado guardado
             var m = (PlayerMemento)lastCheckpoint;
             transform.position = m.Position;
-            int delta = m.SavedLife - model.Life;
-            if (delta > 0) model.Heal(delta);
+
+            // CORRECCIÓN CRÍTICA: Usar SetLife en lugar de Heal
+            model.SetLife(m.SavedLife);
+
             rb.velocity = Vector2.zero;
             isDashing = isKnockback = false;
             rb.gravityScale = originalGravity;
 
-            // 5. Reactivar componentes
+            // 6. Reactivar componentes
             enabled = true;
             rb.simulated = true;
             GetComponent<Collider2D>().enabled = true;
             view.ResetStatesOnLand();
+
+            // 7. Forzar actualización de vida
+            GameEventManager.TriggerPlayerLifeEvent(model.Life, model.MaxLife);
         }
 
         model.EndRespawn();
         isRespawning = false;
     }
 
-    /// <summary>
-    /// Llamado por el checkpoint para registrar el estado.
-    /// </summary>
     public void SetCheckpoint(IMemento memento)
     {
         lastCheckpoint = memento;
@@ -199,9 +204,6 @@ public class PlayerController : MonoBehaviour
         isKnockback = false;
     }
 
-    /// <summary>
-    /// Firma original de tu proyecto: mantiene intacta la lógica de daño.
-    /// </summary>
     public void TakeDamage(int damageAmount)
     {
         model.TakeDamage(damageAmount);

@@ -12,11 +12,9 @@ public class PlayerView : MonoBehaviour
     [Header("Particle Systems")]
     [SerializeField] private ParticleSystem jumpParticles, doubleJumpParticles, landParticles, dashParticles, deathParticles;
 
-    [Header("Animation Settings")]
-    [SerializeField] private float deathAnimDuration = 1f;
-
     private SpriteRenderer sr;
     private Animator anim;
+    private bool isDying = false;
 
     private void Awake()
     {
@@ -41,22 +39,40 @@ public class PlayerView : MonoBehaviour
 
     public void StartDeathSequence()
     {
-        // Desactivar animación de hit y activar muerte
-        anim.SetBool("Hurt", false);
-        anim.SetBool("PlayerDeath", true);
+        if (isDying) return;
+        isDying = true;
 
-        Debug.Log("Player estiró la pata");
+        anim.SetBool("Hurt", false);
+        anim.SetBool("Jump", false);
+        anim.SetBool("isDouble", false);
+        anim.SetBool("Fall", false);
+
+        anim.SetBool("PlayerDeath", true);
     }
 
     public void EndDeathSequence()
     {
         anim.SetBool("PlayerDeath", false);
+        isDying = false;
     }
 
-    public float DeathAnimDuration => deathAnimDuration;
+    public float GetDeathAnimationLength()
+    {
+        RuntimeAnimatorController ac = anim.runtimeAnimatorController;
+        foreach (AnimationClip clip in ac.animationClips)
+        {
+            if (clip.name == "PlayerDeath")
+            {
+                return clip.length;
+            }
+        }
+        return 1f;
+    }
 
     public void HandleMove(Vector2 vel)
     {
+        if (isDying) return;
+
         anim.SetFloat("Speed", Mathf.Abs(vel.x));
         if (vel.x != 0f) sr.flipX = vel.x < 0f;
 

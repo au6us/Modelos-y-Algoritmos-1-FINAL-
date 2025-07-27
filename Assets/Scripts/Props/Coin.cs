@@ -6,8 +6,7 @@ public class Coin : CollectibleBase
 
     protected override void OnCollected(Collider2D player)
     {
-        base.OnCollected(player); // Pasar el parámetro al método base
-
+        base.OnCollected(player);
         Debug.Log("Moneda recolectada!");
     }
 }

@@ -72,18 +72,18 @@ public class PlayerModel : MonoBehaviour
     {
         if (IsRespawning) return;
 
-        // Solo activar animación de hit si no estamos muriendo
         bool willDie = (currentLife - damageAmount) <= 0;
 
         currentLife = Mathf.Max(currentLife - damageAmount, 0);
 
-        // Si vamos a morir, no activamos la animación de hit
+        // Disparar evento de vida
+        GameEventManager.TriggerPlayerLifeEvent(currentLife, maxLife);
+        OnLifeChanged?.Invoke(currentLife);
+
         if (!willDie)
         {
             OnDamage?.Invoke();
         }
-
-        OnLifeChanged?.Invoke(currentLife);
 
         if (currentLife <= 0)
             OnDeath?.Invoke();
@@ -91,13 +91,28 @@ public class PlayerModel : MonoBehaviour
 
     public void Heal(int amount)
     {
-        currentLife = Mathf.Min(currentLife + amount, maxLife);
-        OnLifeChanged?.Invoke(currentLife);
+        int newLife = Mathf.Min(currentLife + amount, maxLife);
+
+        if (newLife != currentLife)
+        {
+            currentLife = newLife;
+            GameEventManager.TriggerPlayerLifeEvent(currentLife, maxLife);
+            OnLifeChanged?.Invoke(currentLife);
+        }
     }
 
-    /// <summary>
-    /// Crea un memento con la posición actual y la vida.
-    /// </summary>
+    // Nuevo método para establecer la vida directamente
+    public void SetLife(int newLife)
+    {
+        newLife = Mathf.Clamp(newLife, 0, maxLife);
+        if (newLife != currentLife)
+        {
+            currentLife = newLife;
+            GameEventManager.TriggerPlayerLifeEvent(currentLife, maxLife);
+            OnLifeChanged?.Invoke(currentLife);
+        }
+    }
+
     public PlayerMemento SaveState(Vector3 pos)
     {
         return new PlayerMemento(pos, currentLife);

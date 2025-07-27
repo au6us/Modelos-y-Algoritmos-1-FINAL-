@@ -6,7 +6,7 @@ public class UIController : MonoBehaviour
 {
     [Header("Health Settings")]
     [SerializeField] private Slider healthSlider;
-    [SerializeField] private PlayerModel playerModel;
+    [SerializeField] private TextMeshProUGUI healthText;
 
     [Header("Score Settings")]
     [SerializeField] private TextMeshProUGUI scoreText;
@@ -17,30 +17,21 @@ public class UIController : MonoBehaviour
     [SerializeField] private float maxTime = 90f;
     private float startTime;
 
-    private void Awake()
+    private void Start()
     {
-        playerModel.OnLifeChanged += UpdateHealthBar;
+        // Suscripción a eventos
         GameEventManager.OnCollectibleEvent += HandleCollectibleEvent;
+        GameEventManager.OnPlayerLifeEvent += HandlePlayerLifeEvent;
 
-        InitializeUI();
+        // Inicialización
+        startTime = Time.time;
+        UpdateScoreDisplay();
     }
 
     private void OnDestroy()
     {
-        playerModel.OnLifeChanged -= UpdateHealthBar;
         GameEventManager.OnCollectibleEvent -= HandleCollectibleEvent;
-    }
-
-    private void InitializeUI()
-    {
-        healthSlider.maxValue = playerModel.MaxLife;
-        healthSlider.value = playerModel.Life;
-
-        startTime = Time.time;
-        if (timeBar != null) timeBar.fillAmount = 1f;
-
-        currentScore = 0;
-        UpdateScoreDisplay();
+        GameEventManager.OnPlayerLifeEvent -= HandlePlayerLifeEvent;
     }
 
     private void Update()
@@ -48,9 +39,19 @@ public class UIController : MonoBehaviour
         UpdateTimeBar();
     }
 
-    private void UpdateHealthBar(int newLife)
+    private void HandlePlayerLifeEvent(PlayerLifeEventData lifeData)
     {
-        healthSlider.value = newLife;
+        // Actualizar UI de vida
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = lifeData.MaxLife;
+            healthSlider.value = lifeData.CurrentLife;
+        }
+
+        if (healthText != null)
+        {
+            healthText.text = $"{lifeData.CurrentLife}/{lifeData.MaxLife}";
+        }
     }
 
     private void HandleCollectibleEvent(CollectibleEventData eventData)

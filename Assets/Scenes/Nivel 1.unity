@@ -5312,7 +5312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.2830189, g: 0.2830189, b: 0.2830189, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.5019608}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -73673,13 +73673,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - type: 0
-    uiIcon: {fileID: 0}
+    uiIcon: {fileID: 33525249}
     pickUpSource: {fileID: 1439641464}
     activationSource: {fileID: 1439641465}
     duration: 6
     effectObject: {fileID: 1994512846}
     equipped: 0
     active: 0
+    originalColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!82 &1439641464
 AudioSource:
   m_ObjectHideFlags: 0

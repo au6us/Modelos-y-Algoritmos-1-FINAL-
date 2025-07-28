@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PowerUpManager : MonoBehaviour
 {
@@ -13,19 +14,20 @@ public class PowerUpManager : MonoBehaviour
         public PowerUpType type;
 
         [Header("UI & Pickup")]
-        public GameObject uiIcon;        // Icono UI (inactive por defecto)
-        public AudioSource pickUpSource; // AudioSource al equipar
+        public Image uiIcon;           // Tu Image en la UI
+        public AudioSource pickUpSource;
 
         [Header("Activación")]
-        public AudioSource activationSource; // AudioSource al activar
-        public float duration = 5f;          // Duración configurable
-        public GameObject effectObject;      // Tu segunda cámara u otro efecto
+        public AudioSource activationSource;
+        public float duration = 5f;
+        public GameObject effectObject;
 
         [HideInInspector] public bool equipped;
         [HideInInspector] public bool active;
+        [HideInInspector] public Color originalColor;
     }
 
-    [Header("Configura tus Power‑Ups aquí (orden = tecla 1,2,3...)")]
+    [Header("Configura Power‑Ups aca (orden = tecla 1,2,3...) se charla")]
     [SerializeField] private List<Entry> entries;
 
     private void Awake()
@@ -33,10 +35,14 @@ public class PowerUpManager : MonoBehaviour
         if (Instance == null) Instance = this;
         else { Destroy(gameObject); return; }
 
-        // Inicializar flags y objetos inactivos
+        // Guardar color original y oscurecer items
         foreach (var e in entries)
         {
-            if (e.uiIcon != null) e.uiIcon.SetActive(false);
+            if (e.uiIcon != null)
+            {
+                e.originalColor = e.uiIcon.color;
+                e.uiIcon.color = e.originalColor * 0.5f; //Se baja el Alpha a la mitad;
+            }
             if (e.effectObject != null) e.effectObject.SetActive(false);
             e.equipped = false;
             e.active = false;
@@ -59,8 +65,11 @@ public class PowerUpManager : MonoBehaviour
         if (e == null || e.equipped) return;
 
         e.equipped = true;
-        if (e.uiIcon != null) e.uiIcon.SetActive(true);
-        if (e.pickUpSource != null) e.pickUpSource.Play();
+        if (e.uiIcon != null)
+        {
+            e.uiIcon.color = Color.white;
+        }
+        e.pickUpSource?.Play();
     }
 
     private void TryActivate(Entry e)
@@ -72,20 +81,22 @@ public class PowerUpManager : MonoBehaviour
     private IEnumerator ActivateRoutine(Entry e)
     {
         e.active = true;
+        e.activationSource?.Play();
+        if (e.effectObject != null)
+            e.effectObject.SetActive(true);
 
-        // Sonido y efecto inmediato
-        if (e.activationSource != null) e.activationSource.Play();
-        if (e.effectObject != null) e.effectObject.SetActive(true);
-
-        // Esperar duración
         yield return new WaitForSeconds(e.duration);
 
-        // Apagar efecto
-        if (e.effectObject != null) e.effectObject.SetActive(false);
+        // Desactivar efecto
+        if (e.effectObject != null)
+            e.effectObject.SetActive(false);
 
-        // Consumir el power‑up: ya no está equipado ni activo ni en UI
+        // Consumir el power‑up y restaurar color UI
         e.active = false;
         e.equipped = false;
-        if (e.uiIcon != null) e.uiIcon.SetActive(false);
+        if (e.uiIcon != null)
+        {
+            e.uiIcon.color = e.originalColor * 0.5f;
+        }
     }
 }

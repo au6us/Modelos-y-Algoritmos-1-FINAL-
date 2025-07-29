@@ -9,15 +9,13 @@ public class PowerUpPickup : MonoBehaviour
 
     private void Reset()
     {
-        // Para que el collider funcione en trigger automáticamente
         var col = GetComponent<Collider2D>();
         col.isTrigger = true;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Player"))
-            return;
+        if (!other.CompareTag("Player")) return;
 
         PowerUpManager.Instance.Equip(type);
         Destroy(gameObject);

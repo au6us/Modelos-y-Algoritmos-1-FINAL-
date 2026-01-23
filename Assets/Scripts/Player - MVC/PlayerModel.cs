@@ -16,11 +16,19 @@ public class PlayerModel : MonoBehaviour
     [SerializeField] private int maxLife = 10;
     [SerializeField] private int currentLife = 10;
 
+    // Invulnerabilidad
+    [Header("Invulnerability Settings")]
+    [SerializeField] private float postShieldInvincibilityTime = 3f;
+
     public int JumpsLeft { get; private set; }
     public bool CanDash { get; private set; } = true;
     public int Life => currentLife;
     public int MaxLife => maxLife;
     public bool IsRespawning { get; private set; }
+
+    // Escudo 
+    public bool HasShield { get; private set; }
+    public bool IsInvincible { get; private set; } // Para que no le peguen después de romper escudo
 
     public event Action OnJump;
     public event Action OnDoubleJump;
@@ -29,6 +37,8 @@ public class PlayerModel : MonoBehaviour
     public event Action OnDash;
     public event Action OnDamage;
     public event Action OnDeath;
+    // Evento para avisarle a la View que parpadee
+    public event Action<bool> OnInvincibilityChanged;
 
     private void Awake()
     {
@@ -74,6 +84,16 @@ public class PlayerModel : MonoBehaviour
     {
         if (IsRespawning) return;
 
+        // Chequeo de Invulnerabilidad
+        if (IsInvincible) return; // Si es invencible, ignoramos el daño
+
+        // Chequeo de Escudo
+        if (HasShield)
+        {
+            BreakShield(); // Rompemos el escudo en lugar de restar vida
+            return;
+        }
+
         bool willDie = (currentLife - damageAmount) <= 0;
 
         currentLife = Mathf.Max(currentLife - damageAmount, 0);
@@ -114,5 +134,33 @@ public class PlayerModel : MonoBehaviour
     public void EndRespawn()
     {
         IsRespawning = false;
+    }
+
+    // MÉTODOS PARA EL ESCUDO
+
+    public void GrantShield()
+    {
+        HasShield = true;
+        IsInvincible = false; // El escudo resetea invulnerabilidad previa si la hubiera
+    }
+
+    public void BreakShield()
+    {
+        if (!HasShield) return;
+
+        HasShield = false;
+        // Inicia invulnerabilidad post-escudo (second chance)
+        StartCoroutine(InvulnerabilityRoutine());
+    }
+
+    private IEnumerator InvulnerabilityRoutine()
+    {
+        IsInvincible = true;
+        OnInvincibilityChanged?.Invoke(true); // View
+
+        yield return new WaitForSeconds(postShieldInvincibilityTime);
+
+        IsInvincible = false;
+        OnInvincibilityChanged?.Invoke(false); // Avisar a la View
     }
 }

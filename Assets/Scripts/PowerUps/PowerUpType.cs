@@ -3,5 +3,6 @@ public enum PowerUpType
 {
     CameraZoom,
     Boost,
-    // Agregá más tipos según necesites
+    Shield
+    // Acá se agrega lo que uno quiera
 }

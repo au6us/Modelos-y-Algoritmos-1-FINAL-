@@ -1,10 +1,9 @@
-﻿// PowerUpPickup.cs
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
 public class PowerUpPickup : MonoBehaviour
 {
-    [Header("Tipo de Power‑Up")]
+    [Header("Tipo de Power-Up")]
     [SerializeField] private PowerUpType type;
 
     private void Reset()
@@ -17,7 +16,10 @@ public class PowerUpPickup : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        PowerUpManager.Instance.Equip(type);
+        // ¡Le avisa al Manager que lo active instantáneamente!
+        PowerUpManager.Instance.ActivatePowerUp(type);
+
+        // Destruye el objeto del mapa
         Destroy(gameObject);
     }
 }

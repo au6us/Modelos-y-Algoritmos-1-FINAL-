@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PowerUpManager : MonoBehaviour
 {
@@ -12,31 +11,33 @@ public class PowerUpManager : MonoBehaviour
     {
         public PowerUpType type;
 
-        [Header("UI & Pickup")]
-        public Image uiIcon;
+        [Header("Sonidos")]
         public AudioSource pickUpSource;
-
-        [Header("Activación (Start)")]
         public AudioSource activationSource;
-        public float duration = 5f;
-        public GameObject effectObject;        // La burbuja visual
-        public ParticleSystem activeParticles; // Partículas en loop
+        public AudioSource breakSource;
 
-        [Header("Finalización (End/Break)")]
-        public AudioSource breakSource;       // Sonido al romperse
-        public ParticleSystem breakParticles; // Explosión final
+        [Header("Visuales")]
+        public GameObject effectObject;        // Burbuja, estela, etc.
+        public ParticleSystem activeParticles; // Partículas en loop
+        public ParticleSystem breakParticles;  // Explosión al terminar
+
+        [Header("Configuración")]
+        public float duration = 5f;
 
         [Header("Boost Settings")]
         public float moveSpeedMultiplier = 1.5f;
         public int extraJumps = 1;
         public float dashCooldownMultiplier = 0.5f;
 
-        [HideInInspector] public bool equipped;
         [HideInInspector] public bool active;
-        [HideInInspector] public Color originalColor;
+
+        // --- NUEVO: Guardamos los stats originales acá adentro, sin depender de la UI ---
+        [HideInInspector] public float originalMoveSpeed;
+        [HideInInspector] public int originalMaxJumps;
+        [HideInInspector] public float originalDashCooldown;
     }
 
-    [Header("Asigná tus Power‑Ups")]
+    [Header("Asigná tus Power-Ups")]
     [SerializeField] private List<Entry> entries;
 
     private void Awake()
@@ -46,63 +47,31 @@ public class PowerUpManager : MonoBehaviour
 
         foreach (var e in entries)
         {
-            if (e.uiIcon != null)
-            {
-                e.originalColor = e.uiIcon.color;
-                e.uiIcon.color = e.originalColor * 0.2f;
-            }
             if (e.effectObject != null) e.effectObject.SetActive(false);
             if (e.activeParticles != null) e.activeParticles.Stop();
-
-            e.equipped = e.active = false;
+            e.active = false;
         }
     }
 
-    private void Update()
-    {
-        // Seguimos escuchando teclas, PERO como el escudo nunca se marca como "equipped",
-        // apretar el 3 no va a hacer nada. (Lo cual está perfecto).
-        for (int i = 0; i < entries.Count; i++)
-            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
-                TryActivate(entries[i]);
-    }
+    // ¡CHAU AL METODO UPDATE! Ya no escuchamos el teclado.
 
-    public void Equip(PowerUpType type)
+    public void ActivatePowerUp(PowerUpType type)
     {
         var e = entries.Find(x => x.type == type);
         if (e == null) return;
 
-        // --- CAMBIO CLAVE AQUI ---
-        // Si es el ESCUDO, se activa automáticamente al tocarlo.
-        if (e.type == PowerUpType.Shield)
-        {
-            // Si ya está activo, no hacemos nada (o podrías reiniciar el tiempo si quisieras)
-            if (e.active) return;
+        // Si el poder ya está activo, no hacemos nada (evita que se superpongan bugs)
+        if (e.active) return;
 
-            e.pickUpSource?.Play(); // Sonido de agarrar
-            StartCoroutine(ActivateRoutine(e)); // ¡Se activa solo!
-        }
-        else
-        {
-            // Lógica vieja para los otros poderes (Boost, Zoom) que SI requieren tecla
-            if (e.equipped) return;
-
-            e.equipped = true;
-            if (e.uiIcon != null) e.uiIcon.color = Color.white;
-            e.pickUpSource?.Play();
-        }
-    }
-
-    private void TryActivate(Entry e)
-    {
-        // Esta función ahora solo sirve para los poderes manuales.
-        if (!e.equipped || e.active) return;
-        StartCoroutine(ActivateRoutine(e));
+        e.pickUpSource?.Play(); // Sonido al tocarlo
+        StartCoroutine(ActivateRoutine(e)); // ¡Se activa solo al instante!
     }
 
     private IEnumerator ActivateRoutine(Entry e)
     {
         e.active = true;
+
+        // Asumo que tu PlayerController tiene el PlayerModel, ajustá esto si lo buscás distinto
         var model = PlayerController.Instance.GetComponent<PlayerModel>();
 
         // 1. Feedback de INICIO
@@ -119,9 +88,8 @@ public class PowerUpManager : MonoBehaviour
         }
         else if (e.type == PowerUpType.Shield)
         {
-            model.GrantShield(); // Dar escudo
+            model.GrantShield();
 
-            // Esperar mientras dure el tiempo Y siga teniendo el escudo intacto
             float timer = e.duration;
             while (timer > 0 && model.HasShield)
             {
@@ -136,8 +104,7 @@ public class PowerUpManager : MonoBehaviour
                 yield return null;
             }
 
-            // Si salió del while y TODAVÍA tiene escudo (o sea, se acabó el tiempo),
-            // lo rompemos manualmente para gatillar la invencibilidad.
+            // Si se acabó el tiempo y todavía tiene escudo, lo rompemos
             if (model.HasShield)
             {
                 model.BreakShield();
@@ -145,6 +112,7 @@ public class PowerUpManager : MonoBehaviour
         }
         else
         {
+            // Para el CameraZoom u otros poderes que agregues
             yield return new WaitForSeconds(e.duration);
         }
 
@@ -157,18 +125,16 @@ public class PowerUpManager : MonoBehaviour
         if (e.effectObject != null) e.effectObject.SetActive(false);
 
         e.active = false;
-
-        // Solo des-equipamos si era un item equipable. 
-        // Como el escudo nunca se marcó como "equipped", esto no afecta, pero limpia prolijo.
-        e.equipped = false;
-        if (e.uiIcon != null) e.uiIcon.color = e.originalColor * 0.2f;
     }
 
     private void ApplyBoost(Entry e, PlayerModel model)
     {
-        e.uiIcon.GetComponent<BoostHolder>()?.StoreOriginals(
-            model.MoveSpeed, model.MaxJumps, model.DashCooldown
-        );
+        // Guardamos las estadísticas reales antes de modificarlas
+        e.originalMoveSpeed = model.MoveSpeed;
+        e.originalMaxJumps = model.MaxJumps;
+        e.originalDashCooldown = model.DashCooldown;
+
+        // Aplicamos la mejora
         model.MoveSpeed *= e.moveSpeedMultiplier;
         model.MaxJumps += e.extraJumps;
         model.DashCooldown *= e.dashCooldownMultiplier;
@@ -176,12 +142,9 @@ public class PowerUpManager : MonoBehaviour
 
     private void RemoveBoost(Entry e, PlayerModel model)
     {
-        var holder = e.uiIcon.GetComponent<BoostHolder>();
-        if (holder != null)
-        {
-            model.MoveSpeed = holder.OriginalMoveSpeed;
-            model.MaxJumps = holder.OriginalMaxJumps;
-            model.DashCooldown = holder.OriginalDashCooldown;
-        }
+        // Devolvemos a la normalidad usando los datos que guardamos
+        model.MoveSpeed = e.originalMoveSpeed;
+        model.MaxJumps = e.originalMaxJumps;
+        model.DashCooldown = e.originalDashCooldown;
     }
 }

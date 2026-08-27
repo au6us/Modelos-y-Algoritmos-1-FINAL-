@@ -35,7 +35,10 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        // Guard del Singleton: si ya existe un player vivo, este duplicado se destruye
+        if (Instance == null) Instance = this;
+        else { Destroy(gameObject); return; }
+
         model = GetComponent<PlayerModel>();
         view = GetComponent<PlayerView>();
         rb = GetComponent<Rigidbody2D>();
@@ -78,6 +81,15 @@ public class PlayerController : MonoBehaviour
         // 4. Finalizar animación de muerte
         view.EndDeathSequence();
 
+        // 4.5. Consumir una vida. Si no quedan, GameplayManager ya disparó el Game Over:
+        // no hay nada más que hacer acá, el jugador queda deshabilitado por HandleGameOver.
+        if (!GameplayManager.Instance.LoseLife())
+        {
+            model.EndRespawn();
+            isRespawning = false;
+            yield break;
+        }
+
         // 5. Realizar respawn
         if (lastCheckpoint == null)
         {
@@ -85,11 +97,10 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            // Restaurar estado guardado
-            var m = (PlayerMemento)lastCheckpoint;
-            transform.position = m.Position;
-            int delta = m.SavedLife - model.Life;
-            if (delta > 0) model.Heal(delta);
+            // Restaurar estado guardado: la posición es parte de la interfaz angosta (Caretaker);
+            // la vida la restaura el propio PlayerModel, que es quien conoce el tipo concreto del memento.
+            transform.position = lastCheckpoint.Position;
+            model.Restore(lastCheckpoint);
             rb.velocity = Vector2.zero;
             isDashing = isKnockback = false;
             rb.gravityScale = originalGravity;
@@ -99,9 +110,6 @@ public class PlayerController : MonoBehaviour
             rb.simulated = true;
             GetComponent<Collider2D>().enabled = true;
             view.ResetStatesOnLand();
-
-            // 7. Actualizar UI de vida (SOLUCIÓN FINAL)
-            GameEventManager.TriggerPlayerLifeEvent(model.Life, model.MaxLife);
         }
 
         model.EndRespawn();

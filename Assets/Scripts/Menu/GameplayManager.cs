@@ -1,61 +1,114 @@
-//using System.Collections;
-//using System.Collections.Generic;
-//using UnityEngine;
-//using UnityEngine.EventSystems;
-//using UnityEngine.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement; // Necesario para recargar niveles y volver al menï¿½
+using UnityEngine.UI; // Si usas botones de UI
 
-//public class GameplayManager : MonoBehaviour
-//{
-//    public GameObject gamePanel, losePanel, winPanel;
-//    private PlayerModel playerModel;
-//    void Start()
-//    {
-//        gamePanel.SetActive(true);
-//        losePanel.SetActive(false);
-//        winPanel.SetActive(false);
+public class GameplayManager : MonoBehaviour
+{
+    // --- Patrï¿½n Singleton ---
+    public static GameplayManager Instance { get; private set; }
 
-//        playerModel = FindObjectOfType<PlayerModel>();
-//    }
+    [Header("Scene Configuration")]
+    [SerializeField] private string mainMenuSceneName = "MainMenu"; // Nombre de tu escena de menï¿½ principal
 
-//    public void Onlose()
-//    {
-//        gamePanel.SetActive(false);
-//        losePanel.SetActive(true);
-//        winPanel.SetActive(false);
-//        Time.timeScale = 0f;
-//    }
+    [Header("Lives")]
+    [SerializeField] private int maxLives = 3;
+    private int currentLives;
 
-//    public void Onwin()
-//    {
-//        gamePanel.SetActive(false);
-//        losePanel.SetActive(false);
-//        winPanel.SetActive(true);
-//        Time.timeScale = 0f;
-//    }
+    // Variables de estado
+    private bool isWin = false;
+    private bool isGameOver = false;
 
-//    public void PlayAgain()
-//    {
-//        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-//        SceneManager.LoadScene(currentSceneIndex);
-//        Time.timeScale = 1;
-//        playerModel.ResetPlayerCollisions();
-//    }
-//    public void BackTomenu()
-//    {
-//        SceneManager.LoadScene(0);
-//    }
+    private void Awake()
+    {
+        // Configuraciï¿½n del Singleton
+        if (Instance == null) Instance = this;
+        else { Destroy(gameObject); return; }
 
-//    public void NextLevel()
-//    {
-//        SceneManager.LoadScene(2);
-//        Time.timeScale = 1;
-//        playerModel.ResetPlayerCollisions();
-//    }
-//    public void RespawnAtCheckpoint()
-//    {
-//        Time.timeScale = 1f;
-//        losePanel.SetActive(false);
-//        gamePanel.SetActive(true);
-//        playerModel.RespawnAtCheckpoint(); // Llama a la función de respawn en el script del jugador
-//    }
-//}
+        // Nos aseguramos de que el tiempo corra al empezar
+        Time.timeScale = 1f;
+
+        currentLives = maxLives;
+
+        // El ScreenManager ya oculta todos sus paneles registrados en su propio Awake.
+    }
+
+    // --- Mï¿½TODOS Pï¿½BLICOS DEL CONTROLADOR DE LOOP ---
+
+    // Llamï¿½ a esto cuando el jugador muere (antes del respawn en el checkpoint).
+    // Devuelve true si todavï¿½a le quedan vidas (el respawn normal sigue su curso).
+    // Devuelve false si se quedï¿½ sin vidas (ya disparï¿½ la pantalla de Game Over).
+    public bool LoseLife()
+    {
+        if (isGameOver || isWin) return false;
+
+        currentLives--;
+        Debug.Log($"Vidas restantes: {currentLives}");
+
+        if (currentLives <= 0)
+        {
+            HandleGameOver();
+            return false;
+        }
+
+        return true;
+    }
+
+    // Pantalla de Game Over compartida: la dispara LoseLife() al quedarse sin vidas,
+    // y UIController la llama directo cuando se acaba el tiempo (sin importar las vidas que queden).
+    public void HandleGameOver()
+    {
+        if (isGameOver || isWin) return; // Si ya terminï¿½ la partida, no hacemos nada
+
+        isGameOver = true;
+        Debug.Log("GAME OVER: El jugador perdiï¿½ definitivamente.");
+
+        // 1. Pausamos el juego
+        Time.timeScale = 0f;
+
+        // 2. Mostramos el panel de Game Over
+        ScreenManager.Instance.Show(ScreenId.GameOver);
+
+        // 3. Desactivamos el control del jugador
+        if (PlayerController.Instance != null) PlayerController.Instance.enabled = false;
+    }
+
+    // Llamï¿½ a esto cuando el jugador toque el trofeo del nivel
+    public void HandleWin()
+    {
+        if (isGameOver || isWin) return; // Si ya terminï¿½ la partida, no hacemos nada
+
+        isWin = true;
+        Debug.Log("YOU WIN: ï¿½El jugador agarrï¿½ el trofeo final!");
+
+        // 1. Pausamos el juego
+        Time.timeScale = 0f;
+
+        // 2. Mostramos el panel de Victoria
+        ScreenManager.Instance.Show(ScreenId.Win);
+
+        // 3. Desactivamos el control del jugador (opcional)
+        if (PlayerController.Instance != null) PlayerController.Instance.enabled = false;
+    }
+
+    // --- Mï¿½TODOS PARA LOS BOTONES DE LA UI ---
+
+    // Llamï¿½ a esto desde el botï¿½n "Reiniciar" del panel de Pausa o del de Game Over
+    public void RestartLevel()
+    {
+        Debug.Log("Reiniciando nivel...");
+        // Volvemos a poner el tiempo normal ANTES de cargar
+        Time.timeScale = 1f;
+        // Recargamos la escena actual
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    // Llamï¿½ a esto desde el botï¿½n "Volver al Menï¿½" de los paneles
+    public void LoadMenu()
+    {
+        Debug.Log("Volviendo al Menï¿½ Principal...");
+        // Volvemos a poner el tiempo normal ANTES de cargar
+        Time.timeScale = 1f;
+        // Cargamos la escena del menï¿½ principal (asegurate de tenerla en Build Settings)
+        SceneManager.LoadScene(mainMenuSceneName);
+    }
+}

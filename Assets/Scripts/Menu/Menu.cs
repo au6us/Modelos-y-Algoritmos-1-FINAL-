@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour
 {
-    public GameObject menuPanel, credits;
     [SerializeField] EventTrigger prototypeButton;
     [SerializeField] EventTrigger creditsButton;
     private PlayerModel playerModel;
@@ -17,20 +16,17 @@ public class Menu : MonoBehaviour
 
     public void ShowMain()
     {
-        menuPanel.SetActive(true);
-        credits.SetActive(false);
+        ScreenManager.Instance.Show(ScreenId.MainMenu);
     }
 
     public void ShowCredits()
     {
-        menuPanel.SetActive(false);
-        credits.SetActive(true);
+        ScreenManager.Instance.Show(ScreenId.Credits);
     }
 
     public void GoToMain()
     {
-        menuPanel.SetActive(true);
-        credits.SetActive(false);
+        ShowMain();
     }
 
     public void Shop()
@@ -40,7 +36,7 @@ public class Menu : MonoBehaviour
 
     public void Salir()
     {
-        Debug.Log("Se cerrará el juego");
+        Debug.Log("Se cerrarï¿½ el juego");
         Application.Quit();
 
     }

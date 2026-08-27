@@ -5,27 +5,54 @@ using UnityEngine.SceneManagement;
 
 public class SceneLoadManager : MonoBehaviour
 {
+    // --- SINGLETON PATTERN ---
+    public static SceneLoadManager Instance { get; private set; }
+
+    [Header("UI References")]
     [SerializeField] private Slider loadBar;
     [SerializeField] private GameObject loadPanel;
-    [SerializeField] private float fakeLoadTime = 3f; // Tiempo extra para completar la barra (ya que habia tiempito de sobra)
+
+    [Header("Settings")]
+    [SerializeField] private float fakeLoadTime = 3f; // Extra time to smooth the loading bar
+
+    private void Awake()
+    {
+        // Setup Singleton and make it immortal across scenes
+        if (Instance == null)
+        {
+            Instance = this;
+            // IMPORTANTE: El objeto que tiene este script no se destruirá al cambiar de escena
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            // Si ya existe uno (por ejemplo, si volvemos al menú), destruimos el duplicado
+            Destroy(gameObject);
+            return;
+        }
+
+        // Asegurarse de que el panel esté apagado al arrancar
+        if (loadPanel != null) loadPanel.SetActive(false);
+    }
 
     public void SceneLoad(int sceneIndex)
     {
-        loadPanel.SetActive(true);
+        if (loadPanel != null) loadPanel.SetActive(true);
         StartCoroutine(LoadAsync(sceneIndex));
     }
 
-    IEnumerator LoadAsync(int sceneIndex)
+    private IEnumerator LoadAsync(int sceneIndex)
     {
         AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneIndex);
-        asyncOperation.allowSceneActivation = false; // Evita que la escena se cargue automáticamente
+        asyncOperation.allowSceneActivation = false; // Prevent auto-activation
 
         float progress = 0f;
 
-        while (asyncOperation.progress < 0.9f) // Mientras la carga real no se complete
+        // While the real loading is not finished
+        while (asyncOperation.progress < 0.9f)
         {
             progress = asyncOperation.progress / 0.9f;
-            loadBar.value = progress;
+            if (loadBar != null) loadBar.value = progress;
             yield return null;
         }
 
@@ -34,11 +61,20 @@ public class SceneLoadManager : MonoBehaviour
         while (elapsedTime < fakeLoadTime)
         {
             elapsedTime += Time.deltaTime;
-            loadBar.value = Mathf.Lerp(progress, 1f, elapsedTime / fakeLoadTime); // Para que la barra no pegue saltitos, si no transicione más fluido
+            if (loadBar != null) loadBar.value = Mathf.Lerp(progress, 1f, elapsedTime / fakeLoadTime);
             yield return null;
         }
 
-        // Una vez terminado el tiempo extra, se activa la escena
+        // 1. Damos luz verde para que la escena cambie
         asyncOperation.allowSceneActivation = true;
+
+        // 2. Esperamos a que Unity termine de hacer el swap de escenas de verdad
+        while (!asyncOperation.isDone)
+        {
+            yield return null;
+        }
+
+        // 3. RECIÉN AHORA, ya estando en el nivel nuevo, apagamos el panel de carga
+        if (loadPanel != null) loadPanel.SetActive(false);
     }
 }

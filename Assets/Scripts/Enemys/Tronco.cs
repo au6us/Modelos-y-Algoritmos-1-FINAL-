@@ -52,8 +52,8 @@ public class Tronco : EnemyBase
 
     public void SpawnBullet()
     {
-        var go = Instantiate(bulletPrefab, shootController.position, transform.rotation);
-        var bullet = go.GetComponent<EnemyBullet>();
+        var prefabBullet = bulletPrefab.GetComponent<EnemyBullet>();
+        var bullet = PoolManager.Instance.Get(prefabBullet, shootController.position, transform.rotation);
         if (bullet != null)
         {
             // Determinar dirección al jugador

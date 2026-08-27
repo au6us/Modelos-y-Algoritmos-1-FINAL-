@@ -2,6 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Contrato de Strategy: cada tipo de power-up sabe aplicarse, esperar/monitorear
+// su propia duración, y devolver al jugador a la normalidad. PowerUpManager no
+// conoce estos detalles, solo pide "activate" y espera a que termine.
+public interface IPowerUpStrategy
+{
+    IEnumerator Activate(PlayerModel model, PowerUpManager.Entry entry);
+}
+
 public class PowerUpManager : MonoBehaviour
 {
     public static PowerUpManager Instance { get; private set; }
@@ -40,10 +48,22 @@ public class PowerUpManager : MonoBehaviour
     [Header("Asigná tus Power-Ups")]
     [SerializeField] private List<Entry> entries;
 
+    // Una estrategia concreta por tipo. Agregar un power-up nuevo es: sumar el valor
+    // al enum, escribir una clase que implemente IPowerUpStrategy, y una línea acá —
+    // no hay que tocar ActivateRoutine.
+    private Dictionary<PowerUpType, IPowerUpStrategy> strategies;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else { Destroy(gameObject); return; }
+
+        strategies = new Dictionary<PowerUpType, IPowerUpStrategy>
+        {
+            { PowerUpType.Boost, new BoostPowerUpStrategy() },
+            { PowerUpType.Shield, new ShieldPowerUpStrategy() },
+            { PowerUpType.CameraZoom, new CameraZoomPowerUpStrategy() },
+        };
 
         foreach (var e in entries)
         {
@@ -79,42 +99,9 @@ public class PowerUpManager : MonoBehaviour
         if (e.effectObject != null) e.effectObject.SetActive(true);
         if (e.activeParticles != null) e.activeParticles.Play();
 
-        // 2. Lógica según TIPO
-        if (e.type == PowerUpType.Boost)
-        {
-            ApplyBoost(e, model);
-            yield return new WaitForSeconds(e.duration);
-            RemoveBoost(e, model);
-        }
-        else if (e.type == PowerUpType.Shield)
-        {
-            model.GrantShield();
-
-            float timer = e.duration;
-            while (timer > 0 && model.HasShield)
-            {
-                timer -= Time.deltaTime;
-
-                // Parpadeo final (últimos 2 seg)
-                if (timer < 2f && e.effectObject != null)
-                {
-                    e.effectObject.SetActive((Time.time * 10) % 2 > 1);
-                }
-
-                yield return null;
-            }
-
-            // Si se acabó el tiempo y todavía tiene escudo, lo rompemos
-            if (model.HasShield)
-            {
-                model.BreakShield();
-            }
-        }
-        else
-        {
-            // Para el CameraZoom u otros poderes que agregues
-            yield return new WaitForSeconds(e.duration);
-        }
+        // 2. Lógica según TIPO — delegada a la Strategy correspondiente
+        if (strategies.TryGetValue(e.type, out var strategy))
+            yield return strategy.Activate(model, e);
 
         // 3. Feedback de FINAL
         e.breakSource?.Play();
@@ -125,26 +112,5 @@ public class PowerUpManager : MonoBehaviour
         if (e.effectObject != null) e.effectObject.SetActive(false);
 
         e.active = false;
-    }
-
-    private void ApplyBoost(Entry e, PlayerModel model)
-    {
-        // Guardamos las estadísticas reales antes de modificarlas
-        e.originalMoveSpeed = model.MoveSpeed;
-        e.originalMaxJumps = model.MaxJumps;
-        e.originalDashCooldown = model.DashCooldown;
-
-        // Aplicamos la mejora
-        model.MoveSpeed *= e.moveSpeedMultiplier;
-        model.MaxJumps += e.extraJumps;
-        model.DashCooldown *= e.dashCooldownMultiplier;
-    }
-
-    private void RemoveBoost(Entry e, PlayerModel model)
-    {
-        // Devolvemos a la normalidad usando los datos que guardamos
-        model.MoveSpeed = e.originalMoveSpeed;
-        model.MaxJumps = e.originalMaxJumps;
-        model.DashCooldown = e.originalDashCooldown;
     }
 }

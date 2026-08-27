@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
-public abstract class EnemyBase : MonoBehaviour
+public abstract class EnemyBase : MonoBehaviour, IPoolable
 {
     [Header("Combat Settings")]
     [SerializeField] protected int damage = 1;
@@ -10,7 +10,6 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected LayerMask playerLayer;
     [SerializeField] protected float deathAnimDuration = 0.5f;
 
-    public EnemyBase Prefab { get; set; }
     public EnemySpawner OriginSpawner { get; set; }
     public event Action<EnemyBase> OnDie;
 

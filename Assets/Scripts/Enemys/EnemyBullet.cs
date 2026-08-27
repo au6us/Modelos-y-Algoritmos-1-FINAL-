@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D), typeof(SpriteRenderer))]
-public class EnemyBullet : MonoBehaviour
+public class EnemyBullet : MonoBehaviour, IPoolable
 {
     [Header("Combat Settings")]
     [SerializeField] private float speed = 10f;
@@ -53,7 +53,14 @@ public class EnemyBullet : MonoBehaviour
 
     private void DestroySelf()
     {
-        Destroy(gameObject);
+        PoolManager.Instance.Release(this);
+    }
+
+    // IPoolable: al reciclarse desde el pool, aseguramos que no arrastre velocidad de su vuelo anterior.
+    // SetDirection() la vuelve a fijar enseguida, esto es solo defensa por si algo la usa antes.
+    public void ResetState()
+    {
+        if (rb != null) rb.velocity = Vector2.zero;
     }
 
     public void SetDirection(Vector2 dir)

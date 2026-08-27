@@ -15,20 +15,21 @@ public class UIController : MonoBehaviour
     [SerializeField] private Image timeBar;
     [SerializeField] private float maxTime = 90f;
     private float startTime;
+    private bool timeIsUp = false;
 
     private void Awake()
     {
         // Hacer persistente el Canvas entre escenas
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
     {
-        // Suscripción a eventos
+        // Suscripciï¿½n a eventos
         GameEventManager.OnCollectibleEvent += HandleCollectibleEvent;
         GameEventManager.OnPlayerLifeEvent += HandlePlayerLifeEvent;
 
-        // Inicialización
+        // Inicializaciï¿½n
         startTime = Time.time;
         UpdateScoreDisplay();
     }
@@ -75,12 +76,20 @@ public class UIController : MonoBehaviour
         float elapsed = Time.time - startTime;
         float fillValue = 1f - (elapsed / maxTime);
         timeBar.fillAmount = Mathf.Clamp01(fillValue);
+
+        // Se acabÃ³ el tiempo: Game Over directo, sin importar cuÃ¡ntas vidas queden.
+        if (!timeIsUp && elapsed >= maxTime)
+        {
+            timeIsUp = true;
+            GameplayManager.Instance.HandleGameOver();
+        }
     }
 
-    // Lógica adicional según tus necesidades
+    // Lï¿½gica adicional segï¿½n tus necesidades
     public void ResetTimer()
     {
         startTime = Time.time;
+        timeIsUp = false;
     }
 
     public void AddPoints(int points)

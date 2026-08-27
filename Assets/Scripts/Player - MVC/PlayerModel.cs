@@ -28,7 +28,7 @@ public class PlayerModel : MonoBehaviour
 
     // Escudo 
     public bool HasShield { get; private set; }
-    public bool IsInvincible { get; private set; } // Para que no le peguen después de romper escudo
+    public bool IsInvincible { get; private set; } // Para que no le peguen despuï¿½s de romper escudo
 
     public event Action OnJump;
     public event Action OnDoubleJump;
@@ -85,7 +85,7 @@ public class PlayerModel : MonoBehaviour
         if (IsRespawning) return;
 
         // Chequeo de Invulnerabilidad
-        if (IsInvincible) return; // Si es invencible, ignoramos el daño
+        if (IsInvincible) return; // Si es invencible, ignoramos el daï¿½o
 
         // Chequeo de Escudo
         if (HasShield)
@@ -126,6 +126,18 @@ public class PlayerModel : MonoBehaviour
         return new PlayerMemento(pos, currentLife);
     }
 
+    // El propio Originator es quien conoce el tipo concreto del memento y se restaura a sÃ­ mismo.
+    public void Restore(IMemento memento)
+    {
+        var playerMemento = memento as PlayerMemento;
+        if (playerMemento == null) return;
+
+        int delta = playerMemento.SavedLife - currentLife;
+        if (delta > 0) Heal(delta);
+
+        GameEventManager.TriggerPlayerLifeEvent(currentLife, maxLife);
+    }
+
     public void StartRespawn()
     {
         IsRespawning = true;
@@ -136,7 +148,7 @@ public class PlayerModel : MonoBehaviour
         IsRespawning = false;
     }
 
-    // MÉTODOS PARA EL ESCUDO
+    // Mï¿½TODOS PARA EL ESCUDO
 
     public void GrantShield()
     {

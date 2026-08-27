@@ -1,58 +1,33 @@
-//using System.Collections;
-//using System.Collections.Generic;
-//using UnityEngine;
+using UnityEngine;
 
-//public class Trofeo : MonoBehaviour
-//{
-//    [SerializeField] private AudioSource winAudioSource;
-//    [SerializeField] public ParticleSystem sdpWin;
-//    [SerializeField] private GameplayManager gamePlayCanvas;
-//    [SerializeField] private Animator animatorTrophy;
-//    [SerializeField] private float delayWin = 4f; // Tiempo de espera antes de mostrar el panel de victoria
+[RequireComponent(typeof(Collider2D))]
+public class Trofeo : MonoBehaviour
+{
+    private void Reset()
+    {
+        // Nos aseguramos de que sea un Trigger
+        var col = GetComponent<Collider2D>();
+        col.isTrigger = true;
+    }
 
-//    private bool hasPlayedSound = false;
-//    private LevelManager levelManager;
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        // Verificamos si es el jugador el que tocó el trofeo
+        if (!other.CompareTag("Player")) return;
 
-//    private void Start()
-//    {
-//        levelManager = FindObjectOfType<LevelManager>(); // Buscar el LevelManager en la escena
-//    }
+        Debug.Log("¡El jugador tocó el Trofeo!");
 
-//    private void OnTriggerEnter2D(Collider2D collision)
-//    {
-//        if (collision.gameObject.CompareTag("Player"))
-//        {
-//            if (collision.gameObject.GetComponent<PlayerModel>())
-//            {
-//                animatorTrophy.SetBool("Win", true);
-//                sdpWin.Play();
+        // --- LLAMADA CLAVE AL CONTROLADOR CENTRAL ---
+        if (GameplayManager.Instance != null)
+        {
+            GameplayManager.Instance.HandleWin();
 
-//                if (!hasPlayedSound)
-//                {
-//                    winAudioSource.Play();
-//                    hasPlayedSound = true; // Marcar que el sonido ya se reprodujo
-//                }
-
-//                // **Guardar estrellas del nivel**
-//                if (levelManager != null)
-//                {
-//                    levelManager.CompleteLevel();
-//                    Debug.Log("Nivel completado, estrellas guardadas.");
-//                }
-//                else
-//                {
-//                    Debug.LogError("No se encontró LevelManager en la escena.");
-//                }
-
-//                // Iniciar la corrutina para mostrar el panel de victoria después de un retraso
-//                StartCoroutine(ShowWinScreenAfterDelay());
-//            }
-//        }
-//    }
-
-//    private IEnumerator ShowWinScreenAfterDelay()
-//    {
-//        yield return new WaitForSeconds(delayWin);
-//        gamePlayCanvas.Onwin();
-//    }
-//}
+            // Opcional: Desactivamos el objeto Trofeo para que no se toque dos veces
+            gameObject.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError("ERROR: No se encontró el 'GameplayManager' en la escena.");
+        }
+    }
+}

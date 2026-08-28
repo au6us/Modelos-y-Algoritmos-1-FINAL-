@@ -7,6 +7,7 @@ public static class GameEventManager
 {
     public static event Action<CollectibleEventData> OnCollectibleEvent;
     public static event Action<PlayerLifeEventData> OnPlayerLifeEvent;
+    public static event Action<PlayerLivesEventData> OnPlayerLivesEvent;
 
     // Nueva funcionalidad para manejar persistencia UI
     private static bool isInitialized = false;
@@ -30,7 +31,7 @@ public static class GameEventManager
         PlayerController player = FindPlayer();
         if (player != null)
         {
-            // Forzar actualización de UI
+            // Forzar actualizaciï¿½n de UI
             PlayerModel model = player.GetComponent<PlayerModel>();
             if (model != null)
             {
@@ -50,7 +51,7 @@ public static class GameEventManager
         UIController uiController = UnityEngine.Object.FindObjectOfType<UIController>();
         if (uiController != null)
         {
-            // Hacer persistente si no es persistente aún
+            // Hacer persistente si no es persistente aï¿½n
             if (uiController.transform.parent == null)
             {
                 UnityEngine.Object.DontDestroyOnLoad(uiController.gameObject);
@@ -64,7 +65,7 @@ public static class GameEventManager
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         uiCanvas.AddComponent<UIController>();
 
-        // Crear elementos UI mínimos
+        // Crear elementos UI mï¿½nimos
         CreateUIElements(uiCanvas);
 
         UnityEngine.Object.DontDestroyOnLoad(uiCanvas);
@@ -72,8 +73,8 @@ public static class GameEventManager
 
     private static void CreateUIElements(GameObject parent)
     {
-        // Implementación básica de creación de UI
-        // Deberías reemplazar esto con tu prefab de UI real
+        // Implementaciï¿½n bï¿½sica de creaciï¿½n de UI
+        // Deberï¿½as reemplazar esto con tu prefab de UI real
         GameObject healthSliderObj = new GameObject("HealthSlider");
         healthSliderObj.transform.SetParent(parent.transform);
 
@@ -102,6 +103,17 @@ public static class GameEventManager
             MaxLife = maxLife
         });
     }
+
+    // "Lives" (plural) = vidas extra / continues del GameplayManager (arranca en 3).
+    // No confundir con "Life" (singular) de arriba, que es la salud/HP del frog.
+    public static void TriggerPlayerLivesEvent(int currentLives, int maxLives)
+    {
+        OnPlayerLivesEvent?.Invoke(new PlayerLivesEventData
+        {
+            CurrentLives = currentLives,
+            MaxLives = maxLives
+        });
+    }
 }
 
 public enum CollectibleType
@@ -122,4 +134,10 @@ public struct PlayerLifeEventData
 {
     public int CurrentLife;
     public int MaxLife;
+}
+
+public struct PlayerLivesEventData
+{
+    public int CurrentLives;
+    public int MaxLives;
 }

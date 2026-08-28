@@ -14,6 +14,9 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] private int maxLives = 3;
     private int currentLives;
 
+    public int CurrentLives => currentLives;
+    public int MaxLives => maxLives;
+
     // Variables de estado
     private bool isWin = false;
     private bool isGameOver = false;
@@ -29,6 +32,12 @@ public class GameplayManager : MonoBehaviour
 
         currentLives = maxLives;
 
+        // Avisamos al HUD el valor inicial de vidas (el UIController hace además un
+        // pull directo en su Start, por si su suscripción llega tarde: todos los Awake
+        // de la escena corren antes que cualquier Start, así que este evento puede
+        // dispararse antes de que el HUD llegue a suscribirse).
+        GameEventManager.TriggerPlayerLivesEvent(currentLives, maxLives);
+
         // El ScreenManager ya oculta todos sus paneles registrados en su propio Awake.
     }
 
@@ -43,6 +52,7 @@ public class GameplayManager : MonoBehaviour
 
         currentLives--;
         Debug.Log($"Vidas restantes: {currentLives}");
+        GameEventManager.TriggerPlayerLivesEvent(currentLives, maxLives);
 
         if (currentLives <= 0)
         {

@@ -30,9 +30,6 @@ public class PlayerController : MonoBehaviour
     // Memento
     private IMemento lastCheckpoint;
 
-    // Posición de partida del nivel, para poder respawnear ahí si todavía no se
-    // encontró ningún checkpoint (en vez de recargar la escena entera - ver DeathAndRespawnRoutine).
-    private Vector3 initialSpawnPosition;
 
     public static PlayerController Instance { get; private set; }
 
@@ -46,7 +43,6 @@ public class PlayerController : MonoBehaviour
         view = GetComponent<PlayerView>();
         rb = GetComponent<Rigidbody2D>();
         originalGravity = rb.gravityScale;
-        initialSpawnPosition = transform.position;
     }
 
     private void OnEnable()
@@ -94,16 +90,10 @@ public class PlayerController : MonoBehaviour
             yield break;
         }
 
-        // 5. Realizar respawn. Antes, si no había checkpoint todavía, esto recargaba
-        // la escena entera - lo que de paso volvía a correr GameplayManager.Awake() y
-        // pisaba el conteo de vidas (por eso, sin checkpoint, cada muerte "reaparecía"
-        // con las 3 vidas de nuevo en vez de ir bajando). Ahora, sin checkpoint,
-        // reaparece en el punto de partida del nivel con la vida al máximo - mismo
-        // tratamiento que un checkpoint real, sin tocar la escena ni las vidas.
+        // 5. Realizar respawn
         if (lastCheckpoint == null)
         {
-            transform.position = initialSpawnPosition;
-            model.Heal(model.MaxLife);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
         else
         {
@@ -111,17 +101,16 @@ public class PlayerController : MonoBehaviour
             // la vida la restaura el propio PlayerModel, que es quien conoce el tipo concreto del memento.
             transform.position = lastCheckpoint.Position;
             model.Restore(lastCheckpoint);
+            rb.velocity = Vector2.zero;
+            isDashing = isKnockback = false;
+            rb.gravityScale = originalGravity;
+
+            // 6. Reactivar componentes
+            enabled = true;
+            rb.simulated = true;
+            GetComponent<Collider2D>().enabled = true;
+            view.ResetStatesOnLand();
         }
-
-        rb.velocity = Vector2.zero;
-        isDashing = isKnockback = false;
-        rb.gravityScale = originalGravity;
-
-        // 6. Reactivar componentes
-        enabled = true;
-        rb.simulated = true;
-        GetComponent<Collider2D>().enabled = true;
-        view.ResetStatesOnLand();
 
         model.EndRespawn();
         isRespawning = false;
